@@ -83,14 +83,14 @@ if my_pos:
 
     # PISTENPLAN OVERLAY
     # Nutze den Raw-Link deines Bildes auf GitHub
-    image_url = "https://raw.githubusercontent.com/DEIN_USER/DEIN_REPO/main/soelden_pistenplan.jpg"
+    image_url = "https://raw.githubusercontent.com/xTheBest21/Skinavi/main/soelden_pistenplan.jpg"
     bild_grenzen = [[46.920, 10.930], [47.010, 11.060]]
     
     folium.raster_layers.ImageOverlay(
         image=image_url,
         bounds=bild_grenzen,
         opacity=0.8,
-        name="soelden_pistenplan.jpg"
+        name="Sölden Pistenplan"
     ).add_to(m)
 
     folium.Marker(my_pos, popup="START", icon=folium.Icon(color='blue')).add_to(m)
