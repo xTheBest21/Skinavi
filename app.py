@@ -63,10 +63,11 @@ def build_soelden_graph():
         "🏠 Wirtshaus Giggijoch": (515, 895),
         "🏠 Gampe Thaya": (385, 892),
         "🏠 Gampe Alm": (366.0625, 912.5000),
-        "🏠 Hühnersteign": (450, 820),
+        "🏠 Hühnersteign": (439, 777),
         "🏠 Hochsölden (Ort)": (350, 850),
         "🏠 Sonnblick": (340, 840),
-
+        "🏠 s´Stabele Schirmbar": (385.5, 806.7500)
+        
         # --- VERBINDUNG GOLDEN GATE ---
         "💺 Langegg (Zubringer)": (420, 600),
         "💺 Einzeiger": (550, 620),
