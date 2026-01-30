@@ -36,82 +36,69 @@ def build_soelden_graph():
     
     # KNOTEN: Name : (Y, X)
     nodes = {
-        # --- SEKTOR GAISLACHKOGL ---
+        # --- KATEGORIE 1: PISTEN (1 - 38) ---
+        "⛷️ Piste 1 (Blau)": (250, 350),
+        "⛷️ Piste 2 (Rot)": (500, 280),
+        "⛷️ Piste 4 (Blau)": (450, 400),
+        "⛷️ Piste 5 (Rot)": (480, 320),
+        "⛷️ Piste 7 (Blau)": (480, 920),
+        "⛷️ Piste 8 (Schwarz)": (460, 950),
+        "⛷️ Piste 10 (Blau)": (520, 750),
+        "⛷️ Piste 11 (Blau)": (460, 680),
+        "⛷️ Piste 13 (Blau)": (430, 830),
+        "⛷️ Piste 14 (Blau)": (510, 850),
+        "⛷️ Piste 15 (Blau)": (550, 920),
+        "⛷️ Piste 19 (Rot)": (380, 820),
+        "⛷️ Piste 20 (Rot)": (150, 780),
+        "⛷️ Piste 21 (Rot)": (540, 930),
+        "⛷️ Piste 22 (Rot)": (530, 940),
+        "⛷️ Piste 23 (Blau)": (400, 650),
+        "⛷️ Piste 30 (Blau)": (630, 600),
+        "⛷️ Piste 32 (Blau)": (750, 480),
+        "⛷️ Piste 33 (Schwarz)": (720, 430),
+        "⛷️ Piste 37 (Blau)": (760, 350),
+        "⛷️ Piste 38 (Blau)": (780, 280),
+
+        # --- KATEGORIE 2: HÜTTEN & RESTAURANTS ---
+        "🏠 Annemaries Hütte": (350, 380),
+        "🏠 Bubis Schihütte": (320, 400),
+        "🏠 Falcon Restaurant": (405, 330),
+        "🏠 Gaislachalm": (300, 420),
+        "🏠 Gampe Alm": (366, 912),
+        "🏠 Gampe Thaya": (385, 892),
+        "🏠 Gletschertisch": (710, 510),
+        "🏠 Heidealm": (440, 430),
+        "🏠 Hochsölden (Ort)": (350, 850),
+        "🏠 Hühnersteign": (439, 777),
+        "🏠 ice Q": (615, 290),
+        "🏠 Löple Alm": (310, 430),
+        "🏠 Rettenbach Market": (700, 480),
+        "🏠 s´Stabele Schirmbar": (385, 806),
+        "🏠 Sonnblick": (340, 840),
+        "🏠 Wirtshaus Giggijoch": (515, 895),
+
+        # --- KATEGORIE 3: LIFTE & BAHNEN ---
         "🚠 Gaislachkogl I (Tal)": (130, 360),
         "🚠 Gaislachkogl I (Mittel)": (400, 310),
         "🚠 Gaislachkogl II (Gipfel)": (610, 280),
-        "💺 Heidebahn": (450, 420),
-        "💺 Wasserkar": (480, 350),
-        "💺 Stabele": (430, 450),
-        "🏠 Falcon Restaurant": (405, 330),
-        "🏠 ice Q": (615, 290),
-        "🏠 Bubis Schihütte": (320, 400),
-        "🏠 Annemaries Hütte": (350, 380),
-        "🏠 Gaislachalm": (300, 420),
-        "🏠 Löple Alm": (310, 430),
-        "🏠 Heidealm": (440, 430),
-
-        # --- SEKTOR GIGGIJOCH / HOCHSÖLDEN ---
         "🚠 Giggijochbahn (Tal)": (70, 750),
         "🚠 Giggijochbahn (Berg)": (510, 880),
-        "💺 Silberbrünnl": (580, 950),
-        "💺 Rosskirpl": (550, 980),
-        "💺 Hainbachkar": (530, 920),
-        "💺 Seekogl": (500, 950),
-        "💺 Rotkogl": (620, 780),
-        "💺 Giggijoch Sessel": (520, 850),
-        "🏠 Wirtshaus Giggijoch": (515, 895),
-        "🏠 Gampe Thaya": (385, 892),
-        "🏠 Gampe Alm": (366.0625, 912.5000),
-        "🏠 Hühnersteign": (439, 777),
-        "🏠 Hochsölden (Ort)": (350, 850),
-        "🏠 Sonnblick": (340, 840),
-        "🏠 s´Stabele Schirmbar": (385.5, 806.7500),
-        
-        # --- VERBINDUNG GOLDEN GATE ---
-        "💺 Langegg (Zubringer)": (420, 600),
-        "💺 Einzeiger": (550, 620),
         "🚠 Gletscherexpress": (650, 550),
-
-        # --- GLETSCHER ---
         "🚠 Schwarze Schneid I": (720, 500),
         "🚠 Schwarze Schneid II": (850, 400),
         "🚠 Tiefenbachbahn": (750, 250),
+        "💺 Einzeiger": (550, 620),
+        "💺 Giggijoch Sessel": (520, 850),
+        "💺 Hainbachkar": (530, 920),
+        "💺 Heidebahn": (450, 420),
+        "💺 Langegg (Zubringer)": (420, 600),
+        "💺 Rosskirpl": (550, 980),
+        "💺 Rotkogl": (620, 780),
+        "💺 Seekogl": (500, 950),
         "💺 Seiterjöchl": (700, 350),
-        "🏠 Gletschertisch": (710, 510),
-        "🏠 Rettenbach Market": (700, 480),
-
-        # --- PISTEN-VERBINDUNGEN ---
-    "⛷️ Piste 1 (Gaislachkogl Talfahrt)": (250, 350),
-    "⛷️ Piste 11 (Giggijoch Verbindung)": (480, 700),
-    "⛷️ Piste 13 (Giggijoch Talabfahrt)": (300, 800),
-    "⛷️ Piste 30 (Gletscherverbindung)": (650, 450),
-    "⛷️ Piste 38 (Tiefenbachferner)": (780, 300),
-
-        # --- HAUPTPISTEN GAISLACHKOGL ---
-        "⛷️ Piste 1 (Talabfahrt Gaislach)": (200, 380),
-        "⛷️ Piste 4 (Zubringer Heidebahn)": (500, 400),
-        "⛷️ Piste 5 (Gaislachkogl Mittel)": (420, 350),
-
-        # --- HAUPTPISTEN GIGGIJOCH / HOCHSÖLDEN ---
-        "⛷️ Piste 13 (Giggijoch Hauptpiste)": (450, 850),
-        "⛷️ Piste 15 (Verbindung Silberbrünnl)": (550, 900),
-        "⛷️ Piste 19 (Hochsölden Abfahrt)": (380, 820),
-        "⛷️ Piste 20 (Talabfahrt Giggijoch)": (150, 780),
-
-        # --- GOLDEN GATE / VERBINDUNG ---
-        "⛷️ Piste 11 (Verbindung Giggijoch-Gaislach)": (450, 650),
-        "⛷️ Piste 30 (Gletscher-Zubringer)": (600, 520),
-
-        # --- GLETSCHER PISTEN ---
-        "⛷️ Piste 32 (Rettenbachferner)": (750, 480),
-        "⛷️ Piste 38 (Tiefenbachferner)": (780, 280),
-        "⛷️ Piste 7 (Giggijoch Blau)": (480, 920),
-        "⛷️ Piste 8 (Giggijoch Rot)": (460, 950),
-        "⛷️ Piste 10 (Giggijoch Verbindung)": (520, 750),
-        "⛷️ Piste 2 (Gaislachkogl Rot)": (450, 300),
-        "⛷️ Piste 23 (Langegg Abfahrt)": (400, 650),
-        "⛷️ Piste 33 (Rettenbach Steilhang)": (700, 430),
+        "💺 Silberbrünnl": (580, 950),
+        "💺 Stabele": (430, 450),
+        "💺 Wasserkar": (480, 350),
     }
     
     for name, pos in nodes.items():
