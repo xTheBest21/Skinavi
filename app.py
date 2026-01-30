@@ -23,13 +23,13 @@ def load_ski_data():
             return json.load(f)
     else:
         overpass_url = "http://overpass-api.de/api/interpreter"
-        # Die Query sucht jetzt nach Pisten UND Hütten/Restaurants
+        # Wir suchen jetzt gezielt nach ALLEM, was mit Gastronomie oder Tourismus zu tun hat
         query = """
         [out:json];
         (
           way["piste:type"](46.93, 10.95, 47.00, 11.05);
-          node["amenity"="restaurant"](46.93, 10.95, 47.00, 11.05);
-          node["tourism"="alpine_hut"](46.93, 10.95, 47.00, 11.05);
+          node["amenity"~"restaurant|bar|cafe|pub"](46.93, 10.95, 47.00, 11.05);
+          node["tourism"~"alpine_hut|hotel"](46.93, 10.95, 47.00, 11.05);
         );
         out geom;
         """
