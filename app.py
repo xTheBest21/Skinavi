@@ -143,3 +143,28 @@ if location:
     st.info(f"**Anweisung:** Folge der Richtungspfeil zur {ziel_name}. Nutze vorzugsweise die blauen Pisten in deiner Nähe.")
 
     # (Hier folgt der Code für die Karte m = folium.Map...)
+# ... (dein bisheriger Code bis st_folium) ...
+
+# 6. Interaktive Checkliste für deine Route
+st.markdown("---")
+st.subheader("📋 Dein Etappen-Plan")
+
+# Wir definieren beispielhafte Etappen für Sölden
+# In einer späteren Version werden diese automatisch aus dem Routing generiert
+etappen = [
+    "🚠 Auffahrt mit der Gaislachkoglbahn I",
+    "⛷️ Abfahrt über die blaue Piste Nr. 38",
+    "🎿 Kurzer Ziehweg Richtung Gamsstadl",
+    "🥘 Einkehr / Ziel erreicht: " + ziel_name
+]
+
+# Erstellen der Checkboxen
+for etappe in etappen:
+    erledigt = st.checkbox(etappe, key=etappe)
+    if erledigt:
+        st.write(f"✅ *Sehr gut! Weiter geht's.*")
+
+# Ein kleiner Motivations-Fortschrittsbalken
+fortschritt = sum([1 for e in etappen if st.session_state.get(e)]) / len(etappen)
+st.progress(fortschritt)
+st.write(f"Du hast {int(fortschritt * 100)}% deines Weges geschafft!")
