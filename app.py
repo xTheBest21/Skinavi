@@ -138,6 +138,14 @@ folium.raster_layers.ImageOverlay(
     bounds=map_bounds
 ).add_to(m)
 
+# Der Schalter (Checkbox) in der Sidebar steuert diesen Teil
+if show_coords:
+    m.add_child(folium.LatLngPopup())
+
+# Erst danach kommt der Teil mit der Routen-Berechnung
+if st.sidebar.button("Route berechnen"):
+    # ...
+
 # --- NEU: PFEIL ANZEIGEN (SOFORT BEI AUSWAHL) ---
 if start in nodes:
     start_coords = nodes[start]
@@ -193,9 +201,5 @@ if st.sidebar.button("Route berechnen"):
     except nx.NetworkXNoPath:
         st.error("Keine Verbindung gefunden!")
 
-# Koordinaten-Klick-Helfer (LatLngPopup)
-if show_coords:
-    m.add_child(folium.LatLngPopup())
-    
 # Anzeige
 st_folium(m, width=1100, height=700)
