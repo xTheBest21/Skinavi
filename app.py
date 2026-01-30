@@ -190,7 +190,18 @@ if start != ziel:
     except nx.NetworkXNoPath:
         st.sidebar.warning("Keine Verbindung gefunden.")
 
-# --- ANZEIGE ---
-st_folium(m, width=None, height=600, key="soelden_final", use_container_width=True)
+# --- ANZEIGE (KOMPAKT) ---
+# Wir nutzen Spalten, um die Karte mittig und schmaler zu machen
+col1, col2, col3 = st.columns([1, 4, 1])
+
+with col2:
+    st_folium(
+        m, 
+        width=700,         # Feste Breite macht die Karte handlicher
+        height=450,        # Etwas geringere Höhe für bessere Übersicht
+        key="soelden_final_compact", 
+        use_container_width=True # Sorgt für Responsivität innerhalb der Spalte
+    )
+
 if route_guide:
     st.info(route_guide)
