@@ -66,7 +66,7 @@ def build_soelden_graph():
         "🏠 Hühnersteign": (439, 777),
         "🏠 Hochsölden (Ort)": (350, 850),
         "🏠 Sonnblick": (340, 840),
-        "🏠 s´Stabele Schirmbar": (385.5, 806.7500)
+        "🏠 s´Stabele Schirmbar": (385.5, 806.7500),
         
         # --- VERBINDUNG GOLDEN GATE ---
         "💺 Langegg (Zubringer)": (420, 600),
