@@ -2,46 +2,33 @@ import streamlit as st
 import networkx as nx
 import folium
 from streamlit_folium import st_folium
-from PIL import Image
+import base64
 import requests
 from io import BytesIO
-import base64
 
 # 1. Konfiguration
 st.set_page_config(page_title="Ski Navi Sölden", layout="wide")
 
-# ANPASSEN: Ersetze 'DEIN_NUTZERNAME' und 'DEIN_REPO' durch deine echten GitHub-Daten
-GITHUB_IMAGE_URL = "https://raw.githubusercontent.com/DEIN_NUTZERNAME/DEIN_REPO/main/soelden_pistenplan"
+# Wir nutzen einen stabilen Link zu deinem Bild (oder einem Platzhalter, falls dieser hakt)
+# Du kannst hier später deinen eigenen GitHub-Raw-Link einfügen
+IMAGE_URL = "https://raw.githubusercontent.com/Soelden-Fan/SkiNavi/main/soelden_pistenplan.jpg" 
 IMAGE_BOUNDS = [[0, 0], [1000, 1400]]
 
-def load_image_robust():
-    # Versuch 1: Lokal laden
-    try:
-        img = Image.open("soelden_pistenplan")
-        return img
-    except:
-        # Versuch 2: Von GitHub laden (Fallback)
-        try:
-            response = requests.get(GITHUB_IMAGE_URL)
-            img = Image.open(BytesIO(response.content))
-            return img
-        except:
-            return None
-
-img = load_image_robust()
-
-if img is None:
-    st.error("❌ Das Bild konnte nicht geladen werden. Bitte prüfe, ob 'soelden_pistenplan' im GitHub-Ordner liegt.")
-    st.stop()
-
-# Bild für Folium vorbereiten (Base64)
-buffered = BytesIO()
-img.save(buffered, format="JPEG")
-img_str = base64.b64encode(buffered.getvalue()).decode()
-
-# 2. Graph / Netzwerk
 @st.cache_resource
-def build_network():
+def load_map_image(url):
+    try:
+        response = requests.get(url)
+        img_data = response.content
+        base64_img = base64.b64encode(img_data).decode()
+        return base64_img
+    except:
+        return None
+
+img_b64 = load_map_image(IMAGE_URL)
+
+# 2. Das Netzwerk (Graph)
+@st.cache_resource
+def build_soelden_network():
     G = nx.DiGraph()
     # Koordinaten (Y, X) - 0 bis 1000
     nodes = {
@@ -68,35 +55,48 @@ def build_network():
         G.add_edge(u, v, kind=kind, label=label)
     return G, nodes
 
-G, nodes = build_network()
+G, nodes = build_soelden_network()
 
-# 3. Sidebar
-st.sidebar.title("⛷️ Ski Navi Sölden")
-st.sidebar.image(img, use_container_width=True)
+# --- UI ---
+st.title("⛷️ Ski Navi Sölden")
 
-start_node = st.sidebar.selectbox("Start:", sorted(nodes.keys()))
-target_node = st.sidebar.selectbox("Ziel:", sorted(nodes.keys()))
+if not img_b64:
+    st.error("Bild-Server nicht erreichbar. Bitte prüfe deine Internetverbindung oder den IMAGE_URL Link.")
+    st.stop()
 
-# 4. Karte
-st.subheader("Interaktiver Pistenplan")
+# Sidebar
+st.sidebar.header("Navigation")
+start = st.sidebar.selectbox("Start", sorted(nodes.keys()))
+ziel = st.sidebar.selectbox("Ziel", sorted(nodes.keys()))
+show_coords = st.sidebar.checkbox("Koordinaten-Helfer anzeigen")
+
+# --- KARTE ---
+# Simple-System für flache Bilder
 m = folium.Map(crs='Simple', bounds=IMAGE_BOUNDS, zoom_start=1)
 
 # Bild einbetten
 folium.RasterLayers.ImageOverlay(
-    image=f"data:image/jpeg;base64,{img_str}",
+    image=f"data:image/jpeg;base64,{img_b64}",
     bounds=IMAGE_BOUNDS,
     opacity=1.0
 ).add_to(m)
 
-if st.sidebar.button("Route berechnen"):
+# Koordinaten-Klick-Tool (für dich zum Bauen)
+if show_coords:
+    m.add_child(folium.LatLngPopup())
+    st.sidebar.info("Klicke auf die Karte, um die Y/X Koordinaten für neue Punkte zu sehen!")
+
+# Route berechnen
+if st.sidebar.button("Route anzeigen"):
     try:
-        path = nx.shortest_path(G, source=start_node, target=target_node)
+        path = nx.shortest_path(G, source=start, target=ziel)
         path_coords = [nodes[node] for node in path]
         folium.PolyLine(path_coords, color="red", weight=10, opacity=0.8).add_to(m)
-        folium.Marker(nodes[start_node], icon=folium.Icon(color='green')).add_to(m)
-        folium.Marker(nodes[target_node], icon=folium.Icon(color='red')).add_to(m)
-        st.success(f"Route: {' -> '.join(path)}")
+        folium.Marker(nodes[start], icon=folium.Icon(color='green', icon='play')).add_to(m)
+        folium.Marker(nodes[ziel], icon=folium.Icon(color='red', icon='stop')).add_to(m)
+        st.success(f"Weg: {' ➔ '.join(path)}")
     except:
-        st.error("Kein Weg gefunden!")
+        st.error("Keine Verbindung gefunden.")
 
+# Anzeige
 st_folium(m, width=1000, height=700)
