@@ -1,4 +1,3 @@
-!pip install streamlit streamlit-folium folium streamlit-js-eval
 import folium
 
 # Wir erstellen eine Karte, die auf Sölden zentriert ist
