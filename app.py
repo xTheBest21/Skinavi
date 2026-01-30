@@ -1,7 +1,7 @@
 import streamlit as st
 from streamlit_folium import st_folium
 import folium
-
+st.set_page_config(layout="wide") # Macht die Karte breiter auf dem Handy
 # 1. App-Titel und Design
 st.set_page_config(page_title="SkiNavi Sölden", layout="centered")
 st.title("⛷️ SkiNavi Sölden")
