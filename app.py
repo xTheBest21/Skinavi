@@ -185,8 +185,30 @@ if img_data is None:
     st.stop()
 
 # Sidebar Auswahl
-start = st.sidebar.selectbox("Dein Standort", sorted(nodes.keys()))
-ziel = st.sidebar.selectbox("Wohin willst du?", sorted(nodes.keys()))
+# --- FILTER-LOGIK ---
+st.sidebar.title("🔍 Filter & Auswahl")
+
+# 1. Auswahl des Typs für Start und Ziel
+kategorie_start = st.sidebar.radio("Start-Kategorie:", ["Alle", "⛷️ Pisten", "🏠 Hütten", "🚠 Lifte"])
+kategorie_ziel = st.sidebar.radio("Ziel-Kategorie:", ["Alle", "⛷️ Pisten", "🏠 Hütten", "🚠 Lifte"])
+
+# Hilfsfunktion zum Filtern der Liste
+def filter_nodes(kategorie):
+    if kategorie == "⛷️ Pisten":
+        return [n for n in nodes.keys() if "⛷️" in n]
+    elif kategorie == "🏠 Hütten":
+        return [n for n in nodes.keys() if "🏠" in n]
+    elif kategorie == "🚠 Lifte":
+        return [n for n in nodes.keys() if "🚠" in n or "💺" in n]
+    return sorted(nodes.keys())
+
+# 2. Dynamische Dropdowns
+start_liste = filter_nodes(kategorie_start)
+ziel_liste = filter_nodes(kategorie_ziel)
+
+start = st.sidebar.selectbox("Dein Standort", start_liste)
+ziel = st.sidebar.selectbox("Wohin willst du?", ziel_liste)
+
 show_coords = st.sidebar.checkbox("Koordinaten-Helfer (für neue Punkte)")
     
 # 1. Wir definieren die Grenzen etwas weiter, damit das Handy nicht "blockiert"
