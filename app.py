@@ -74,38 +74,32 @@ ziel = st.sidebar.selectbox("Ziel", sorted(nodes.keys()))
 show_coords = st.sidebar.checkbox("Koordinaten-Helfer anzeigen")
 
 # --- KARTE ---
-# Wir erstellen die Karte ohne 'max_bounds=True', da das oft das Bild verschwinden lässt, 
-# wenn die Grenzen nicht exakt zum Zoom-Level passen.
+# 1. Wir definieren die Grenzen (unten-links und oben-rechts)
+# Diese Werte müssen exakt mit IMAGE_BOUNDS übereinstimmen
+map_bounds = [[0, 0], [1000, 1400]]
+
 m = folium.Map(
     crs='Simple', 
-    zoom_start=1, 
-    min_zoom=1,    # Verhindert zu weites Rauszoomen
-    max_zoom=4     # Erlaubt tiefes Reinzoomen
+    min_zoom=0.5,  # Erlaubt ein kleines Puffer-Herauszoomen
+    max_zoom=4,
+    max_bounds=True, # Aktiviert die Sperre
+    location=[500, 700], # Startet in der Mitte des Bildes
+    zoom_start=0.5
 )
 
-# Bild als Overlay hinzufügen
+# 2. Die Sperre festlegen: Der Nutzer kann nicht aus diesem Rechteck herauswischen
+m.set_max_bounds(map_bounds)
+
+# 3. Das Bild einfügen
 folium.raster_layers.ImageOverlay(
     image=f"data:image/jpeg;base64,{img_data}",
-    bounds=IMAGE_BOUNDS,
+    bounds=map_bounds,
     opacity=1.0
 ).add_to(m)
 
-# WICHTIG: Diese Zeile zwingt die Karte, genau auf das Bild zu springen
-m.fit_bounds(IMAGE_BOUNDS)
+# 4. Sicherstellen, dass die Karte beim Laden das ganze Bild zeigt
+m.fit_bounds(map_bounds)
 
-# Helfer-Tool
+# Helfer-Tool (nur wenn Haken in Sidebar gesetzt)
 if show_coords:
     m.add_child(folium.LatLngPopup())
-
-# Route berechnen
-if st.sidebar.button("Route berechnen"):
-    try:
-        path = nx.shortest_path(G, source=start, target=ziel)
-        path_coords = [nodes[node] for node in path]
-        folium.PolyLine(path_coords, color="red", weight=5).add_to(m)
-        st.success(f"Route: {' ➔ '.join(path)}")
-    except:
-        st.error("Keine Verbindung gefunden.")
-
-# Anzeige in Streamlit
-st_folium(m, width=1000, height=700)
