@@ -74,28 +74,23 @@ ziel = st.sidebar.selectbox("Ziel", sorted(nodes.keys()))
 show_coords = st.sidebar.checkbox("Koordinaten-Helfer anzeigen")
 
 # --- KARTE ---
-m = folium.Map(crs='Simple', bounds=IMAGE_BOUNDS, zoom_start=1)
+# Wir setzen min_zoom auf 1, damit man nicht zu weit weg kann.
+# max_bounds stellt sicher, dass man nicht aus dem Bild "herausscrollen" kann.
+m = folium.Map(
+    crs='Simple', 
+    bounds=IMAGE_BOUNDS, 
+    zoom_start=1, 
+    min_zoom=1, 
+    max_zoom=4,
+    max_bounds=True
+)
 
-# --- HIER WAR DER FEHLER (jetzt korrigiert: raster_layers kleingeschrieben) ---
+# Das Bild als einzige Hintergrund-Ebene
 folium.raster_layers.ImageOverlay(
     image=f"data:image/jpeg;base64,{img_data}",
     bounds=IMAGE_BOUNDS,
     opacity=1.0
 ).add_to(m)
 
-# Helfer-Tool
-if show_coords:
-    m.add_child(folium.LatLngPopup())
-    st.info("Klicke auf die Karte, um Koordinaten für neue Lifte zu sehen!")
-
-if st.sidebar.button("Route berechnen"):
-    try:
-        path = nx.shortest_path(G, source=start, target=ziel)
-        # Zeichne Linie
-        path_coords = [nodes[node] for node in path]
-        folium.PolyLine(path_coords, color="red", weight=5).add_to(m)
-        st.success(f"Route: {' ➔ '.join(path)}")
-    except:
-        st.error("Keine Verbindung gefunden.")
-
-st_folium(m, width=1000, height=700)
+# Damit die Karte beim Laden perfekt in das Fenster passt:
+m.fit_bounds(IMAGE_BOUNDS)
