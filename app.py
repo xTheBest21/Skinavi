@@ -156,14 +156,6 @@ if start in nodes:
         )
     ).add_to(m)
 
-# --- ROUTE BERECHNEN (Hier bleibt der Rest wie er war) ---
-if st.sidebar.button("Route berechnen"):
-    # ... dein bisheriger Code für die Linie und das Ziel ...
-
-    # Koordinaten-Klick-Helfer
-if show_coords:
-    m.add_child(folium.LatLngPopup())
-
 # --- ROUTE BERECHNEN ---
 if st.sidebar.button("Route berechnen"):
     try:
