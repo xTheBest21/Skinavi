@@ -35,7 +35,7 @@ soelden_map = folium.Map(
 )
 
 # 5. Pistenplan einbinden (xTheBest21)
-bild_url = "https://raw.githubusercontent.com/xTheBest21/skinavi/main/soelden_pistenplan.jpg"
+bild_url = "https://raw.githubusercontent.com/xTheBest21/Skinavi/main/soelden_pistenplan.jpg"
 
 folium.raster_layers.ImageOverlay(
     url=bild_url,
