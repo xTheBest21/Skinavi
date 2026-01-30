@@ -1,3 +1,38 @@
+import streamlit as st
+from streamlit_folium import st_folium
+import folium
+
+# 1. App-Titel und Design
+st.set_page_config(page_title="SkiNavi Sölden", layout="centered")
+st.title("⛷️ SkiNavi Sölden")
+
+# 2. Auswahl der Zielhütte
+huetten = {
+    "Gamsstadl": [46.9415, 10.9835],
+    "Rettenbachalm": [46.9455, 10.9650],
+    "Sonnblick": [46.9720, 11.0110]
+}
+
+ziel = st.selectbox("Wohin möchtest du?", list(huetten.keys()))
+
+# 3. Den "Route berechnen" Button
+if st.button("Route anzeigen"):
+    st.info(f"Berechne Weg zum {ziel}...")
+    
+    # Karte erstellen
+    m = folium.Map(location=huetten[ziel], zoom_start=15)
+    
+    # Ziel markieren
+    folium.Marker(huetten[ziel], popup=ziel, icon=folium.Icon(color='red')).add_to(m)
+    
+    # Hier würde jetzt dein Routing-Algorithmus die Linie zeichnen
+    # Beispielhafte Linie (Piste)
+    folium.PolyLine([[46.9500, 10.9800], huetten[ziel]], color="blue", weight=5).add_to(m)
+    
+    # Karte in der App anzeigen
+    st_folium(m, width=700, height=500)
+else:
+    st.write("Wähle eine Hütte aus und klicke auf den Button.")
 import folium
 
 # Wir erstellen eine Karte, die auf Sölden zentriert ist
@@ -74,42 +109,7 @@ ski_netz.add_edge("Talstation Silberbrünnl", "Bergstation Silberbrünnl", type=
 # Die App berechnet nun automatisch den Weg
 weg = nx.shortest_path(ski_netz, source="Bergstation Giggijoch", target="Bergstation Silberbrünnl")
 print(f"Dein Weg: {weg}")
-import streamlit as st
-from streamlit_folium import st_folium
-import folium
-
-# 1. App-Titel und Design
-st.set_page_config(page_title="SkiNavi Sölden", layout="centered")
-st.title("⛷️ SkiNavi Sölden")
-
-# 2. Auswahl der Zielhütte
-huetten = {
-    "Gamsstadl": [46.9415, 10.9835],
-    "Rettenbachalm": [46.9455, 10.9650],
-    "Sonnblick": [46.9720, 11.0110]
-}
-
-ziel = st.selectbox("Wohin möchtest du?", list(huetten.keys()))
-
-# 3. Den "Route berechnen" Button
-if st.button("Route anzeigen"):
-    st.info(f"Berechne Weg zum {ziel}...")
-    
-    # Karte erstellen
-    m = folium.Map(location=huetten[ziel], zoom_start=15)
-    
-    # Ziel markieren
-    folium.Marker(huetten[ziel], popup=ziel, icon=folium.Icon(color='red')).add_to(m)
-    
-    # Hier würde jetzt dein Routing-Algorithmus die Linie zeichnen
-    # Beispielhafte Linie (Piste)
-    folium.PolyLine([[46.9500, 10.9800], huetten[ziel]], color="blue", weight=5).add_to(m)
-    
-    # Karte in der App anzeigen
-    st_folium(m, width=700, height=500)
-else:
-    st.write("Wähle eine Hütte aus und klicke auf den Button.")
-    from streamlit_js_eval import streamlit_js_eval
+from streamlit_js_eval import streamlit_js_eval
 
 # Wir fragen das Handy nach den GPS-Daten
 location = streamlit_js_eval(
