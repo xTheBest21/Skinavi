@@ -206,17 +206,24 @@ if st.sidebar.button("Route berechnen"):
         st.success(f"Route gefunden: {len(path)-1} Abschnitte")
         
         # --- HIER IST DER GUIDE ---
-        st.subheader("🗺️ Dein Ski-Guide")
-        for i in range(len(path) - 1):
-            p1, p2 = path[i], path[i+1]
-            if "🚠" in p2 or "💺" in p2:
-                st.write(f"**Schritt {i+1}:** Mit {p2} nach oben fahren.")
-            elif "🏠" in p2:
-                st.write(f"**Schritt {i+1}:** Ziel erreicht bei {p2} 🍽️")
-            else:
-                st.write(f"**Schritt {i+1}:** Über die Piste abfahren nach: **{p2}** ⛷️")
+     # --- KOMPAKTER GUIDE PRO ---
+        st.subheader("🗺️ Dein Weg zum Ziel")
         
-        st.balloons()
+        # Den Pfad schöner formatieren
+        formatted_path = []
+        for i, station in enumerate(path):
+            if i == 0:
+                formatted_path.append(f"🏁 **Start:** {station}")
+            elif i == len(path) - 1:
+                formatted_path.append(f"🎯 **Ziel:** {station}")
+            else:
+                # Hier kannst du "⛷️" oder "Piste" davor setzen, falls es kein Lift/Haus ist
+                formatted_path.append(station)
+        
+        # Mit Pfeilen verbinden
+        guide_text = " ➔ ".join(formatted_path)
+        
+        st.success(f"{guide_text}")
 
     except nx.NetworkXNoPath:
         st.error("Keine Verbindung gefunden! Bitte prüfe die Pistenverbindungen.")
