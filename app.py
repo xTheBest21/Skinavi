@@ -116,3 +116,47 @@ if my_pos:
         st.error("⚫ Warnung: Schwarze Pisten (schwer) liegen auf dem Weg!")
     
     st.info("💡 **Tipp:** Orientiere dich an den farbigen Linien auf der Karte, die in Richtung der grünen Markierung verlaufen.")
+# ... (Deine Importe und load_ski_data bleiben gleich) ...
+
+# 5. Die Karte im "Sölden-Style" bauen
+# Wir nutzen ein Terrain-Design, um die Berge (BIG 3) hervorzuheben
+m = folium.Map(
+    location=[46.9655, 11.0088], 
+    zoom_start=13, 
+    tiles="OpenStreetMap", # Du kannst auch "Stamen Terrain" versuchen, falls verfügbar
+    attr="Pistenplan Sölden Style"
+)
+
+# Farbschema exakt nach Sölden-Legende (PDF Seite 1)
+pisten_farben = {
+    "easy": "#0055ff",       # Kräftiges Blau (Leicht)
+    "intermediate": "#ff0000", # Signalrot (Mittel)
+    "advanced": "#000000",   # Tiefschwarz (Schwer)
+    "expert": "#000000",
+    "skiroute": "#ffaa00"    # Orange/Gelb für Routen
+}
+
+# Pisten zeichnen mit dicken Linien wie im Plan
+for element in data.get('elements', []):
+    if 'geometry' in element and 'piste:type' in element.get('tags', {}):
+        pts = [(p['lat'], p['lon']) for p in element['geometry']]
+        tags = element.get('tags', {})
+        diff = tags.get('piste:difficulty', 'unknown')
+        
+        # Linienstärke erhöhen für "Plan-Optik"
+        color = pisten_farben.get(diff, "gray")
+        folium.PolyLine(
+            pts, 
+            color=color, 
+            weight=4, 
+            opacity=0.8,
+            tooltip=f"Piste: {tags.get('name', 'unbekannt')}"
+        ).add_to(m)
+
+# Lifte einzeichnen (als graue/schwarze Doppellinien wie im Plan)
+for element in data.get('elements', []):
+    if 'aerialway' in element.get('tags', {}):
+        pts = [(p['lat'], p['lon']) for p in element['geometry']]
+        folium.PolyLine(pts, color="#555555", weight=2, dash_array='5, 5').add_to(m)
+
+# ... (Restlicher Standort-Code) ...
