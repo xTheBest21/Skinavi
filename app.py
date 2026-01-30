@@ -222,7 +222,7 @@ map_bounds = [[0, 0], [3504, 4958]]
 m = folium.Map(
     crs='Simple', 
     location=[500, 700], 
-    zoom_start=3,  # Etwas näher starten für Handys
+    zoom_start=0.01,  # Etwas näher starten für Handys
     tiles=None,
     # Wir erlauben dem User etwas mehr Platz zum Bewegen
     max_bounds=True,
@@ -251,7 +251,9 @@ map_bounds = [[0, 0], [img_height, img_width]]
 m = folium.Map(
     crs='Simple', 
     location=[img_height / 2, img_width / 2], # Startet in der Mitte des Bildes
-    zoom_start=-0.1,
+    zoom_start=-00.1,
+    min_zomm=1
+    max_zoom= 2
     tiles=None,
     # HIER kommen die Bounds als Begrenzung rein:
     max_bounds=True,
