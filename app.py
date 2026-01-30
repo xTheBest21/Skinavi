@@ -78,11 +78,7 @@ st.subheader("Interaktive Navigation")
 m = folium.Map(crs='Simple', bounds=IMAGE_BOUNDS, zoom_start=1)
 
 # Das Bild als Base64-Overlay (sehr robust)
-folium.RasterLayers.ImageOverlay(
-    image=f"data:image/jpeg;base64,{img_base64}",
-    bounds=IMAGE_BOUNDS,
-    opacity=1.0
-).add_to(m)
+folium.RasterLayers.ImageOverlay(image=f"data:image/jpeg;base64,{img_base64}", bounds=IMAGE_BOUNDS, opacity=1.0).add_to(m)
 
 # Routenberechnung
 if st.sidebar.button("Route berechnen"):
