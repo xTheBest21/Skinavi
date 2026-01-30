@@ -187,24 +187,40 @@ if start in nodes:
         )
     ).add_to(m)
 
-# --- ROUTEN-LOGIK (Berechnung vor der Anzeige) ---
-route_guide = ""
-if st.sidebar.button("Route berechnen"):
+# --- AUTOMATISCHE ROUTEN-LOGIK (Kein Button mehr nötig) ---
+
+# Wir berechnen die Route nur, wenn Start und Ziel nicht gleich sind
+if start != ziel:
     try:
         path = nx.shortest_path(G, source=start, target=ziel)
         path_coords = [nodes[node] for node in path]
         
-        # Linie und Ziel-Marker zur Karte hinzufügen
+        # 1. Die rote Linie und das Ziel direkt zur Karte 'm' hinzufügen
         folium.PolyLine(path_coords, color="red", weight=8, opacity=0.8).add_to(m)
         folium.Marker(
             location=path_coords[-1],
-            icon=folium.Icon(color="red", icon="flag", prefix="fa")
+            icon=folium.Icon(color="red", icon="flag", prefix="fa"),
+            popup=f"ZIEL: {ziel}"
         ).add_to(m)
         
-        # Guide-Text erstellen
+        # 2. Den Guide-Text vorbereiten
         route_guide = " ➔ ".join(path)
+        
     except nx.NetworkXNoPath:
-        st.sidebar.error("Keine Verbindung gefunden!")
+        st.sidebar.warning("Keine direkte Pistenverbindung gefunden.")
+        route_guide = ""
+else:
+    route_guide = ""
+    # Wenn Start == Ziel, zeigen wir nur den Startpfeil (ist bereits oben im Code)
+
+# --- ANZEIGE DER KARTE ---
+# Wichtig: 'key' hilft Streamlit, die Karte beim Switchen der Ziele flüssig darzustellen
+st_folium(m, width=1100, height=700, key="soelden_map_auto")
+
+# --- ANZEIGE DES GUIDES UNTER DER KARTE ---
+if route_guide:
+    st.markdown("### 🗺️ Dein Live-Wegweiser")
+    st.success(f"**Route:** {route_guide}")
 
 # --- ANZEIGE DER KARTE ---
 st_folium(m, width=1100, height=700, key="soelden_map")
