@@ -2,13 +2,13 @@ import streamlit as st
 import folium
 from streamlit_folium import st_folium
 
-# 1. Grund-Einstellungen
-st.set_page_config(page_title="SkiNavi Sölden", page_icon="⛷️", layout="wide")
-st.title("⛷️ Sölden: Pistenplan Navigator")
+# 1. Absolut sauberes Setup
+st.set_page_config(page_title="Sölden Navi v11", layout="wide")
+st.title("⛷️ Sölden Pistenplan-Navigator")
 
-# 2. Die Ziele (Hütten & Lifte auf deinem Bild einmessen)
-# Wert 1: HOCH/RUNTER (0-1000), Wert 2: LINKS/RECHTS (0-1000)
-targets = {
+# 2. Die Punkte auf deinem Pistenplan (Eichung)
+# Format: [HOCH/RUNTER, LINKS/RECHTS] im Bereich 0 bis 1000
+pisten_ziele = {
     "🏠 HÜTTE: Gampe Thaya": [635, 465],
     "🏠 HÜTTE: Falcon": [715, 310],
     "🚠 LIFT: Giggijochbahn": [830, 215],
@@ -17,45 +17,41 @@ targets = {
     "⛷️ BIG 3: Gaislachkogl (3058m)": [240, 95]
 }
 
-# 3. Sidebar (NUR EINMAL - löst den DuplicateElementId Fehler)
-st.sidebar.header("📍 Navigation")
-start_name = st.sidebar.selectbox("Wo bist du?", sorted(targets.keys()), key="user_start")
-ziel_name = st.sidebar.selectbox("Wo willst du hin?", sorted(targets.keys()), key="user_target")
+# 3. Sidebar mit völlig neuen Keys (verhindert DuplicateElementId)
+st.sidebar.header("📍 Einstellungen")
+start_sel = st.sidebar.selectbox("Startpunkt:", sorted(pisten_ziele.keys()), key="unique_start_2024")
+ziel_sel = st.sidebar.selectbox("Zielpunkt:", sorted(pisten_ziele.keys()), key="unique_ziel_2024")
 
-# 4. Karte als "Bilderrahmen" (lößt den CRS-Fehler)
-# Wir nutzen 0 bis 1000 als festes Koordinatensystem
-bounds = [[0, 0], [1000, 1000]]
-m = folium.Map(
+# 4. Karte als flaches Bild-System (CRS.Simple)
+bild_grenzen = [[0, 0], [1000, 1000]]
+soelden_map = folium.Map(
     location=[500, 500],
     zoom_start=1,
-    crs=folium.crs.Simple, # Korrekte Kleinschreibung für folium
+    crs=folium.crs.Simple, # Wichtig für flache Bilder
     tiles=None,
     min_zoom=0,
     max_zoom=4,
     max_bounds=True
 )
 
-# 5. Dein Pistenplan als Hintergrundbild
-# WICHTIG: Ersetze xTheBest21 durch deinen GitHub Namen, falls er anders ist
-image_url = "https://raw.githubusercontent.com/xTheBest21/skinavi/main/soelden_pistenplan.jpg"
+# 5. Pistenplan einbinden
+# Nutze deinen xTheBest21 Link
+bild_pfad = "https://raw.githubusercontent.com/xTheBest21/skinavi/main/soelden_pistenplan.jpg"
 
 folium.raster_layers.ImageOverlay(
-    url=image_url,
-    bounds=bounds,
-    zindex=1
-).add_to(m)
+    url=bild_pfad,
+    bounds=bild_grenzen,
+    zindex=1,
+    interactive=True
+).add_to(soelden_map)
 
 # 6. Marker setzen
-start_pos = targets[start_name]
-ziel_pos = targets[ziel_name]
+pos_a = pisten_ziele[start_sel]
+pos_b = pisten_ziele[ziel_sel]
 
-folium.Marker(start_pos, popup=f"START: {start_name}", icon=folium.Icon(color='blue', icon='play')).add_to(m)
-folium.Marker(ziel_pos, popup=f"ZIEL: {ziel_name}", icon=folium.Icon(color='red', icon='flag')).add_to(m)
+folium.Marker(pos_a, popup="START", icon=folium.Icon(color='blue', icon='play')).add_to(soelden_map)
+folium.Marker(pos_b, popup="ZIEL", icon=folium.Icon(color='red', icon='flag')).add_to(soelden_map)
+folium.PolyLine([pos_a, pos_b], color="yellow", weight=5).add_to(soelden_map)
 
-# Richtungslinie
-folium.PolyLine([start_pos, ziel_pos], color="yellow", weight=5, opacity=0.7).add_to(m)
-
-# 7. App-Anzeige
-st_folium(m, width="100%", height=700, use_container_width=True)
-
-st.info("💡 Nutze die Auswahl in der Seitenleiste links, um deine Position auf dem Plan zu markieren.")
+# 7. Anzeige erzwingen
+st_folium(soelden_map, width="100%", height=700, key="soelden_map_widget")
