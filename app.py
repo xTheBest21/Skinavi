@@ -74,30 +74,47 @@ ziel = st.sidebar.selectbox("Ziel", sorted(nodes.keys()))
 show_coords = st.sidebar.checkbox("Koordinaten-Helfer anzeigen")
 
 # --- KARTE ---
-# Wir definieren das Rechteck für dein Bild
+# Wir definieren die Bildgröße
 map_bounds = [[0, 0], [1000, 1400]]
 
-# Karte erstellen
+# Karte ganz einfach ohne restriktive Parameter erstellen
 m = folium.Map(
     crs='Simple',
     location=[500, 700],
-    zoom_start=1,
-    min_zoom=0,         # Erlaubt das Rauszoomen bis zum Bildrand
-    max_zoom=4,         # Erlaubt tiefes Reinzoomen
-    max_bounds=map_bounds # Das hier lockt die Karte auf das Bild ein
+    zoom_start=0.5,
+    min_zoom=0.5,
+    max_zoom=4
 )
 
-# Das Bild einfügen
-folium.raster_layers.ImageOverlay(
+# Das Bild als Overlay hinzufügen
+img_overlay = folium.raster_layers.ImageOverlay(
     image=f"data:image/jpeg;base64,{img_data}",
     bounds=map_bounds,
     opacity=1.0,
-    zindex=1
+    interactive=True
 ).add_to(m)
 
-# DER ENTSCHEIDENDE BEFEHL: Zwingt die Kamera zum Bild
+# 1. Zwingt die Kamera zum Bild
 m.fit_bounds(map_bounds)
 
-# Helfer-Tool (nur wenn in Sidebar aktiviert)
+# 2. DER TRICK: Wir setzen die Grenzen hart per Skript, 
+# nachdem die Karte geladen wurde. Das verhindert das "Verschwinden".
+m.max_bounds = True
+m.options['maxBounds'] = map_bounds
+
+# Helfer-Tool
 if show_coords:
     m.add_child(folium.LatLngPopup())
+
+# Route berechnen
+if st.sidebar.button("Route berechnen"):
+    try:
+        path = nx.shortest_path(G, source=start, target=ziel)
+        path_coords = [nodes[node] for node in path]
+        folium.PolyLine(path_coords, color="red", weight=10).add_to(m)
+        st.success(f"Route: {' ➔ '.join(path)}")
+    except Exception as e:
+        st.error("Keine Verbindung gefunden.")
+
+# Anzeige in Streamlit
+st_folium(m, width=1000, height=700)
