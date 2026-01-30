@@ -37,23 +37,45 @@ def build_soelden_graph():
     
     # Namen jetzt mit Emojis für die Sidebar
     nodes = {
-        # 🚠 Lifts / Stationen
-        "🚠 Gaislachkogl Tal": (130, 360),
-        "🚠 Gaislachkogl Mittel": (400, 310),
-        "🚠 Gaislachkogl Gipfel": (610, 280),
-        "🚠 Giggijoch Tal": (70, 750),
-        "🚠 Giggijoch Berg": (510, 880),
-        
-        # 🏠 Hütten / Restaurants
+        # --- GAISLACHKOGL SEKTOR ---
+        "🚠 Gaislachkogl I (Tal)": (130, 360),
+        "🚠 Gaislachkogl I (Mittel)": (400, 310),
+        "🚠 Gaislachkogl II (Gipfel)": (610, 280),
+        "💺 Heidebahn": (450, 420),
+        "💺 Wasserkar": (480, 350),
+        "💺 Stabele": (430, 450),
         "🏠 Falcon Restaurant": (405, 330),
-        "🏠 Annemaries Hütte": (350, 380),
+        "🏠 ice Q (Gipfel)": (615, 290),
         "🏠 Bubis Schihütte": (320, 400),
+        "🏠 Annemaries Hütte": (350, 380),
+        "🏠 Gaislachalm": (300, 420),
+        "🏠 Löple Alm": (310, 430),
+
+        # --- GIGGIJOCH SEKTOR ---
+        "🚠 Giggijochbahn (Tal)": (70, 750),
+        "🚠 Giggijochbahn (Berg)": (510, 880),
+        "💺 Silberbrünnl": (580, 950),
+        "💺 Rosskirpl": (550, 980),
+        "💺 Hainbachkar": (530, 920),
+        "💺 Seekogl": (500, 950),
+        "💺 Rotkogl": (620, 780),
         "🏠 Wirtshaus Giggijoch": (515, 895),
+        "🏠 Panorama Alm": (480, 850),
         "🏠 Hühnersteign": (450, 820),
-        
-        # ❄️ Gletscher
-        "❄️ Rettenbachferner": (720, 500),
-        "❄️ Tiefenbachferner": (750, 250)
+        "🏠 Gampe Thaya": (400, 750),
+        "🏠 Eugen's Obstlerhütte": (150, 740),
+
+        # --- VERBINDUNG & GLETSCHER ---
+        "💺 Langegg (Zubringer)": (420, 600),
+        "💺 Einzeiger": (550, 620),
+        "🚠 Gletscherexpress": (650, 550),
+        "🚠 Schwarze Schneid I": (720, 500),
+        "🚠 Schwarze Schneid II": (850, 400),
+        "🚠 Tiefenbachbahn": (750, 250),
+        "🏠 Gletschertisch": (710, 510),
+        "🏠 Rettenbach Market": (700, 480),
+        "❄️ Schwarze Schneid (Gipfel)": (900, 400),
+        "❄️ Tiefenbachferner": (760, 240)
     }
     
     for name, pos in nodes.items():
@@ -61,17 +83,30 @@ def build_soelden_graph():
 
     # WICHTIG: Die Verbindungen müssen exakt die gleichen Namen 
     # inklusive der Emojis nutzen!
-    lifte = [
-        ("🚠 Gaislachkogl Tal", "🚠 Gaislachkogl Mittel"),
-        ("🚠 Gaislachkogl Mittel", "🚠 Gaislachkogl Gipfel"),
-        ("🚠 Giggijoch Tal", "🚠 Giggijoch Berg")
+  lifte = [
+        # Gaislachkogl
+        ("🚠 Gaislachkogl I (Tal)", "🚠 Gaislachkogl I (Mittel)"),
+        ("🚠 Gaislachkogl I (Mittel)", "🚠 Gaislachkogl II (Gipfel)"),
+        ("💺 Heidebahn", "🚠 Gaislachkogl I (Mittel)"),
+        # Giggijoch
+        ("🚠 Giggijochbahn (Tal)", "🚠 Giggijochbahn (Berg)"),
+        ("💺 Silberbrünnl", "💺 Rotkogl"),
+        # Verbindung
+        ("💺 Langegg (Zubringer)", "🚠 Gaislachkogl I (Mittel)"),
+        ("💺 Einzeiger", "🚠 Gletscherexpress")
     ]
     
     pisten = [
-        ("🚠 Gaislachkogl Gipfel", "🚠 Gaislachkogl Mittel"),
-        ("🚠 Gaislachkogl Mittel", "🏠 Falcon Restaurant"),
-        ("🏠 Falcon Restaurant", "🚠 Gaislachkogl Mittel"), # Verbindung zurück zur Bahn
-        ("🚠 Gaislachkogl Mittel", "🏠 Annemaries Hütte")
+        # Von der Hütte zur Bahn oder ins Tal
+        ("🏠 Falcon Restaurant", "🚠 Gaislachkogl I (Mittel)"),
+        ("🏠 ice Q (Gipfel)", "🚠 Gaislachkogl II (Gipfel)"),
+        ("🚠 Gaislachkogl I (Mittel)", "🏠 Bubis Schihütte"),
+        ("🏠 Bubis Schihütte", "🏠 Gaislachalm"),
+        ("🏠 Gaislachalm", "🚠 Gaislachkogl I (Tal)"),
+        # Giggijoch Abfahrten
+        ("🚠 Giggijochbahn (Berg)", "🏠 Hühnersteign"),
+        ("🏠 Hühnersteign", "🏠 Gampe Thaya"),
+        ("🏠 Gampe Thaya", "🚠 Giggijochbahn (Tal)")
     ]
     
     for u, v in lifte + pisten:
