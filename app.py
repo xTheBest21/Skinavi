@@ -133,13 +133,13 @@ map_bounds = [[0, 0], [img_height, img_width]]
 m = folium.Map(
     crs='Simple',
     location=[img_height / 2, img_width / 2],
-    zoom_start=-2, # Weit herausgezoomt für Übersicht
-    min_zoom=-4,
+    zoom_start=-5, # Weit herausgezoomt für Übersicht
+    min_zoom=-10,
     max_zoom=2,
     tiles=None,
     max_bounds=True,
-    min_lat=0, max_lat=img_height,
-    min_lon=0, max_lon=img_width
+    min_lat=1000, max_lat=img_height + 1000,
+    min_lon=1000, max_lon=img_width + 1000
 )
 
 folium.raster_layers.ImageOverlay(
@@ -149,6 +149,7 @@ folium.raster_layers.ImageOverlay(
     interactive=True
 ).add_to(m)
 
+m.fit_bounds(map_bounds)
 # CSS Fix
 m.get_root().header.add_child(folium.Element("""
     <style>
