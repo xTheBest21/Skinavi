@@ -127,10 +127,6 @@ if img_data is None:
 start = st.sidebar.selectbox("Dein Standort", sorted(nodes.keys()))
 ziel = st.sidebar.selectbox("Wohin willst du?", sorted(nodes.keys()))
 show_coords = st.sidebar.checkbox("Koordinaten-Helfer (für neue Punkte)")
-
-# Koordinaten-Klick-Helfer (LatLngPopup)
-if show_coords:
-    m.add_child(folium.LatLngPopup())
     
 # --- KARTE INITIALISIEREN ---
 map_bounds = [[0, 0], [1000, 1400]]
@@ -142,6 +138,10 @@ folium.raster_layers.ImageOverlay(
     bounds=map_bounds
 ).add_to(m)
 
+# Koordinaten-Klick-Helfer (LatLngPopup)
+if show_coords:
+    m.add_child(folium.LatLngPopup())
+    
 # --- NEU: PFEIL ANZEIGEN (SOFORT BEI AUSWAHL) ---
 if start in nodes:
     start_coords = nodes[start]
