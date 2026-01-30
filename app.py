@@ -212,8 +212,8 @@ def filter_nodes(kategorie):
 start_liste = filter_nodes(kategorie_start)
 ziel_liste = filter_nodes(kategorie_ziel)
 
-start = st.sidebar.selectbox("Dein Standort", start_liste)
-ziel = st.sidebar.selectbox("Wohin willst du?", ziel_liste)
+start = st.sidebar.radio("Dein Standort", start_liste)
+ziel = st.sidebar.radio("Wohin willst du?", ziel_liste)
 
 show_coords = st.sidebar.checkbox("Koordinaten-Helfer (für neue Punkte)")
     
