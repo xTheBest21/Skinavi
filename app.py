@@ -21,7 +21,18 @@ ziel_name = st.sidebar.selectbox("Zielpunkt:", sorted(pisten_ziele.keys()), key=
 
 # 4. Die Karte (Standard-Modus ohne fehleranfällige CRS-Befehle)
 m = folium.Map(location=[46.95, 11.00], zoom_start=13)
+bild_grenzen = [[46.90, 10.90], [47.00, 11.10]]
 
+m = folium.Map(
+    location=[46.95, 11.00], 
+    zoom_start=13, 
+    min_zoom=12,           # Verhindert zu weites Herauszoomen
+    max_zoom=16,           # Verhindert Verpixelung beim Reinzoomen
+    max_bounds=True,       # Aktiviert die Begrenzung
+    min_lat=bild_grenzen[0][0],
+    max_lat=bild_grenzen[1][0],
+    min_lon=bild_grenzen[0][1],
+    max_lon=bild_grenzen[1][1]
 # 5. Dein Pistenplan als Bild
 bild_url = "https://raw.githubusercontent.com/xTheBest21/skinavi/main/soelden_pistenplan.jpg"
 # Wir nutzen die stabilste Schreibweise für das Overlay
@@ -30,7 +41,12 @@ folium.raster_layers.ImageOverlay(
     bounds=[[46.90, 10.90], [47.00, 11.10]],
     opacity=1.0
 ).add_to(m)
-
+folium.raster_layers.ImageOverlay(
+    image=bild_url,
+    bounds=bild_grenzen,
+    opacity=1.0,
+    zindex=1
+).add_to(m)
 # 6. Marker setzen
 pos_a = pisten_ziele[start_name]
 pos_b = pisten_ziele[ziel_name]
