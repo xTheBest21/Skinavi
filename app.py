@@ -64,51 +64,51 @@ ziel_name = st.sidebar.selectbox("Dein Ziel:", sorted(alle_ziele.keys()))
 my_pos = alle_ziele[start_name]
 ziel_pos = alle_ziele[ziel_name]
 
-# --- 5. Absolut fixierte Karte (Kein Zoomen über den Rand hinaus) ---
+# --- 5. Absolut fixierte Karte (Kein Zoomen über den Rand) ---
 
-# Wir definieren die Grenzen basierend auf deinem Pistenplan
+# Die Grenzen deines Pistenplans (Sölden Gebiet)
 bild_grenzen = [[46.920, 10.930], [47.010, 11.060]]
 
-# Initialisierung der Karte mit CRS.Simple (behandelt die Karte wie ein flaches Bild)
+# Karte initialisieren
 m = folium.Map(
     location=[46.9655, 11.0088], 
     zoom_start=14, 
-    tiles=None,           # Keine Weltkarte im Hintergrund
-    crs="Simple",         # WICHTIG: Verhindert das "Wegschweben" der Karte
-    min_zoom=13, 
-    max_zoom=16, 
-    max_bounds=True,
+    tiles=None,            # Keine Weltkarte im Hintergrund
+    min_zoom=14,           # WICHTIG: Erhöhe diesen Wert (14 oder 15), wenn du immer noch zu weit rauszoomen kannst
+    max_zoom=17,           # Verhindert, dass das Bild zu unscharf wird
+    max_bounds=True,       # Aktiviert die Grenzen
     min_lat=bild_grenzen[0][0],
     max_lat=bild_grenzen[1][0],
     min_lon=bild_grenzen[0][1],
-    max_lon=bild_grenzen[1][1],
-    control_scale=False   # Maßstab ausblenden, da er auf Panorama-Bildern nicht stimmt
+    max_lon=bild_grenzen[1][1]
 )
 
-# Das Bild (Pistenplan) hinzufügen
+# Harter Stopp an den Rändern (Viscosity)
+m.get_root().header.add_child(folium.Element(
+    "<style>.leaflet-container { background: #ffffff; }</style>"
+))
+
+# Den Pistenplan als Bild drüberlegen
 image_url = f"https://raw.githubusercontent.com/xTheBest21/skinavi/main/soelden_pistenplan.jpg"
 
 folium.raster_layers.ImageOverlay(
     image=image_url,
     bounds=bild_grenzen,
     opacity=1.0,
-    interactive=True,
-    cross_origin=True,
     zindex=1,
-    # Verhindert, dass das Bild beim Zoomen grau wird
-    sticky_bounds=True 
+    interactive=True,
+    sticky_bounds=True
 ).add_to(m)
 
-# Marker für Start und Ziel
+# Marker für Start und Ziel setzen
 folium.Marker(my_pos, popup=f"START: {start_name}", icon=folium.Icon(color='blue', icon='play')).add_to(m)
 folium.Marker(ziel_pos, popup=f"ZIEL: {ziel_name}", icon=folium.Icon(color='red', icon='flag')).add_to(m)
 
-# Gelbe Linie als Richtungshilfe
+# Gelbe Verbindungslinie
 folium.PolyLine([my_pos, ziel_pos], color="yellow", weight=5, opacity=0.8).add_to(m)
 
-# Anzeige in Streamlit - use_container_width sorgt für Handy-Optimierung
-st_folium(m, width=None, height=600, use_container_width=True)
-# Info-Box
+# Die Karte anzeigen
+st_folium(m, width="100%", height=600, use_container_width=True)
 distanz = berechne_distanz(my_pos, ziel_pos)
 st.info(f"Distanz zwischen {start_name} und {ziel_name}: ca. {distanz:.2f} km")
 st.error("🆘 Notruf Pistenrettung: +43 5254 508")
