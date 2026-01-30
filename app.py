@@ -23,7 +23,7 @@ ziel = st.sidebar.selectbox("Zielpunkt:", sorted(pisten_ziele.keys()), key="z1")
 m = folium.Map(location=[46.95, 11.00], zoom_start=13)
 
 # Bild einfügen (Dein Pistenplan)
-bild_url = "https://raw.githubusercontent.com/xTheBest21/skinavi/main/soelden_pistenplan.jpg"
+bild_url = "https://raw.githubusercontent.com/xTheBest21/Skinavi/main/soelden_pistenplan.jpg"
 folium.ImageOverlay(
     image=bild_url,
     bounds=[[46.90, 10.90], [47.00, 11.10]],
