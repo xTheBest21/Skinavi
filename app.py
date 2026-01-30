@@ -63,7 +63,7 @@ nodes = {
     
     for name, pos in nodes.items():
         G.add_node(name, pos=pos)
-    # Die Verbindungen (Lifte und Pisten)
+        # Die Verbindungen (Lifte und Pisten)
    edges = [
         # Gaislachkogl Lifte
         ("Gaislachkogl Tal", "Gaislachkogl Mittel"),
