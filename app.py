@@ -222,7 +222,7 @@ map_bounds = [[0, 0], [1000, 1400]]
 m = folium.Map(
     crs='Simple', 
     location=[500, 700], 
-    zoom_start=0.1,  # Etwas näher starten für Handys
+    zoom_start=0.001,  # Etwas näher starten für Handys
     tiles=None,
     # Wir erlauben dem User etwas mehr Platz zum Bewegen
     max_bounds=True,
