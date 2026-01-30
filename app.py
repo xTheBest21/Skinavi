@@ -173,6 +173,12 @@ if start in nodes:
         )
     ).add_to(m)
 
+# --- DER KOORDINATEN-HELFER (Wichtig für dich!) ---
+if show_coords:
+    # Zeigt ein Popup mit den Klick-Koordinaten an
+    m.add_child(folium.LatLngPopup())
+    st.sidebar.info("💡 **Anleitung:** Klicke auf die Karte. Die Zahlen im Popup (y, x) kannst du kopieren und oben im Code bei den Nodes einfügen.")
+
 route_guide = ""
 if start != ziel:
     try:
@@ -189,6 +195,21 @@ if start != ziel:
         route_guide = " ➔ ".join(guide)
     except nx.NetworkXNoPath:
         st.sidebar.warning("Keine Verbindung gefunden.")
+
+# --- ANZEIGE (Schön kompakt) ---
+col1, col2, col3 = st.columns([1, 8, 1])
+with col2:
+    # Wir reduzieren die Höhe auf 500, damit man den Guide darunter sieht
+    output = st_folium(m, width=None, height=500, key="soelden_final", use_container_width=True)
+
+# Falls du geklickt hast, zeigen wir die Koordinaten auch nochmal als Text an (einfacher zum Kopieren)
+if show_coords and output is not None and output.get("last_clicked"):
+    clicked = output["last_clicked"]
+    st.success(f"Geklickte Koordinaten: `{clicked['lat']:.0f}, {clicked['lng']:.0f}`")
+
+if route_guide:
+    st.markdown("### 🗺️ Dein Ski-Guide")
+    st.info(route_guide)
 
 # --- ANZEIGE (KOMPAKT) ---
 # Wir nutzen Spalten, um die Karte mittig und schmaler zu machen
