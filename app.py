@@ -10,17 +10,20 @@ from PIL import Image
 # 1. Seite konfigurieren
 st.set_page_config(page_title="Ski Navi Sölden", layout="wide")
 
-# Link zu deinem Bild auf GitHub (Raw-Link)
-IMAGE_URL = IMAGE_URL = "https://raw.githubusercontent.com/xTheBest21/Skinavi/main/soelden_pistenplan.jpg"
+# DER FIX FÜR ZEILE 14: Nur eine Zuweisung, korrekte Anführungszeichen
+IMAGE_URL = "https://raw.githubusercontent.com/xTheBest21/Skinavi/main/soelden_pistenplan.jpg"
 IMAGE_BOUNDS = [[0, 0], [1000, 1400]]
 
 @st.cache_resource
 def get_image_as_base64(url):
     try:
-        # Bild von URL laden (robuster als lokaler Pfad auf dem Server)
+        # Wir laden das Bild über Requests, um Pfadprobleme auf dem Server zu umgehen
         response = requests.get(url, timeout=10)
         if response.status_code == 200:
             img = Image.open(BytesIO(response.content))
+            # Konvertierung in RGB sorgt dafür, dass PIL das Format sicher erkennt
+            if img.mode in ("RGBA", "P"):
+                img = img.convert("RGB")
             buffered = BytesIO()
             img.save(buffered, format="JPEG")
             return base64.b64encode(buffered.getvalue()).decode()
@@ -30,11 +33,11 @@ def get_image_as_base64(url):
 
 img_b64 = get_image_as_base64(IMAGE_URL)
 
-# 2. Das Ski-Netzwerk
+# 2. Das Ski-Netzwerk (Punkte auf dem Plan)
 @st.cache_resource
 def build_soelden_graph():
     G = nx.DiGraph()
-    # Koordinaten (Y, X) - angepasst an den Plan
+    # Koordinaten (Y, X) - Schätzwerte passend zum Plan
     nodes = {
         "Gaislachkogl Tal": (130, 360),
         "Gaislachkogl Mittelstation": (400, 310),
@@ -64,32 +67,31 @@ G, nodes = build_soelden_graph()
 # --- UI ---
 st.title("⛷️ Ski Navi Sölden")
 
-# Fehlerbehandlung für das Bild (Fix für den SyntaxError in deinem Screenshot)
+# Fehlerprüfung für das Bild (Löst den Error aus image_814b55.png)
 if img_b64 is None or "Error" in str(img_b64):
     st.error(f"Bildfehler: {img_b64}")
-    st.info("Bitte prüfe, ob der Link IMAGE_URL korrekt ist.")
     st.stop()
 
 # Sidebar
 st.sidebar.header("Navigation")
 start = st.sidebar.selectbox("Start", sorted(nodes.keys()))
 ziel = st.sidebar.selectbox("Ziel", sorted(nodes.keys()))
-show_coords = st.sidebar.checkbox("Koordinaten-Helfer anzeigen")
+show_coords = st.sidebar.checkbox("Koordinaten-Helfer (für dich)")
 
 # --- KARTE ---
 m = folium.Map(crs='Simple', bounds=IMAGE_BOUNDS, zoom_start=1)
 
-# Bild als Base64 einbetten (Die sicherste Methode gegen UnidentifiedImageError)
+# Bild einbetten (Die sicherste Methode gegen UnidentifiedImageError)
 folium.RasterLayers.ImageOverlay(
     image=f"data:image/jpeg;base64,{img_b64}",
     bounds=IMAGE_BOUNDS,
     opacity=1.0
 ).add_to(m)
 
-# Koordinaten-Helfer für dich
+# Koordinaten-Helfer (Klick zeigt Position an)
 if show_coords:
     m.add_child(folium.LatLngPopup())
-    st.sidebar.info("Klicke auf das Bild für Y/X Koordinaten!")
+    st.sidebar.info("Klicke auf das Bild, um Y/X Koordinaten für neue Punkte zu sehen!")
 
 if st.sidebar.button("Weg berechnen"):
     try:
@@ -98,7 +100,7 @@ if st.sidebar.button("Weg berechnen"):
         folium.PolyLine(path_coords, color="red", weight=10, opacity=0.8).add_to(m)
         folium.Marker(nodes[start], icon=folium.Icon(color='green')).add_to(m)
         folium.Marker(nodes[ziel], icon=folium.Icon(color='red')).add_to(m)
-        st.success(f"Route gefunden: {' ➔ '.join(path)}")
+        st.success(f"Route: {' ➔ '.join(path)}")
     except:
         st.error("Keine direkte Verbindung gefunden!")
 
