@@ -217,11 +217,6 @@ else:
 # Wichtig: 'key' hilft Streamlit, die Karte beim Switchen der Ziele flüssig darzustellen
 st_folium(m, width=1100, height=700, key="soelden_map_auto")
 
-# --- ANZEIGE DES GUIDES UNTER DER KARTE ---
-if route_guide:
-    st.markdown("### 🗺️ Dein Live-Wegweiser")
-    st.success(f"**Route:** {route_guide}")
-
 # --- ANZEIGE DER KARTE ---
 st_folium(m, width=1100, height=700, key="soelden_map")
 
