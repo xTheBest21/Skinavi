@@ -11,7 +11,7 @@ from PIL import Image
 st.set_page_config(page_title="Ski Navi Sölden", layout="wide")
 
 # Link zu deinem Bild auf GitHub (Raw-Link)
-IMAGE_URL = "https://github.com/xTheBest21/Skinavi/blob/main/soelden_pistenplan.jpg"
+IMAGE_URL = "https://github.com/xTheBest21/Skinavi/blob/7e68d49d23592764a1f92cb07e6fd55dc193fce0/soelden_pistenplan.jpg"
 IMAGE_BOUNDS = [[0, 0], [1000, 1400]]
 
 @st.cache_resource
