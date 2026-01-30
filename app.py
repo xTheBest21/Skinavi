@@ -64,3 +64,38 @@ else:
 
 # Karte im Vollbild-Modus anzeigen
 st_folium(m, width="100%", height=600)
+# ... (dein restlicher Code oben bleibt gleich) ...
+
+# 5. Die Karte bauen mit farbigen Pisten
+m = folium.Map(location=[46.9655, 11.0088], zoom_start=13)
+
+# Farbschema definieren
+pisten_farben = {
+    "easy": "blue",
+    "intermediate": "red",
+    "advanced": "black",
+    "expert": "black"
+}
+
+# Echte Pisten einzeichnen
+for element in data.get('elements', []):
+    if 'geometry' in element:
+        points = [(p['lat'], p['lon']) for p in element['geometry']]
+        
+        # Schwierigkeit aus den Daten auslesen
+        tags = element.get('tags', {})
+        schwierigkeit = tags.get('piste:difficulty', 'unknown')
+        
+        # Farbe bestimmen (Standard ist Grau, wenn unbekannt)
+        farbe = pisten_farben.get(schwierigkeit, "gray")
+        breite = 3 if farbe != "gray" else 1
+        
+        folium.PolyLine(
+            points, 
+            color=farbe, 
+            weight=breite, 
+            opacity=0.7,
+            tooltip=tags.get('name', 'Piste')
+        ).add_to(m)
+
+# ... (dein restlicher Standort-Code unten bleibt gleich) ...
