@@ -88,8 +88,8 @@ def build_soelden_graph():
 # --- UI ---
 # 5. UI INITIALISIEREN
 st.title("⛷️ Ski Navi Sölden")
-start = st.sidebar.selectbox("Start", sorted(nodes.keys()))
-ziel = st.sidebar.selectbox("Ziel", sorted(nodes.keys()))
+start = st.sidebar.selectbox("Start", sorted(nodes.keys())
+ziel = st.sidebar.selectbox("Ziel", sorted(nodes.keys())
 show_coords = st.sidebar.checkbox("Koordinaten-Helfer anzeigen")
 
 # Fehlerprüfung
