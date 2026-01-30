@@ -7,8 +7,24 @@ import requests
 from io import BytesIO
 from PIL import Image
 
-# 1. Seite konfigurieren
+# 1. Seite konfigurieren - "wide" ist die Basis für volle Breite
 st.set_page_config(page_title="Ski Navi Sölden Pro", layout="wide")
+
+# CSS: Entfernt die Standard-Abstände von Streamlit für maximale Monitor-Ausnutzung
+st.markdown("""
+    <style>
+        .block-container {
+            padding-top: 1rem;
+            padding-bottom: 0rem;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            max-width: 100% !important;
+        }
+        iframe {
+            width: 100% !important;
+        }
+    </style>
+    """, unsafe_allow_html=True)
 
 # Bild-URL (Pistenplan)
 IMAGE_URL = "https://raw.githubusercontent.com/xTheBest21/Skinavi/main/soelden_pistenplan.jpg"
@@ -29,11 +45,10 @@ def get_image_base64(url):
 
 img_data = get_image_base64(IMAGE_URL)
 
-# 2. Das Ski-Netzwerk (Hütten & Lifte)
 @st.cache_resource
 def build_soelden_graph():
     G = nx.DiGraph()
-    # KNOTEN: Name : (Y, X) - Koordinaten bezogen auf Bildgröße
+    # KNOTEN: Name : (Y, X)
     nodes = {
         "⛷️ Piste 1 (Blau)": (250, 350), "⛷️ Piste 2 (Rot)": (500, 280),
         "⛷️ Piste 4 (Blau)": (450, 400), "⛷️ Piste 5 (Rot)": (480, 320),
@@ -84,145 +99,4 @@ def build_soelden_graph():
         ("🏠 Silbertaler Alm", "🚠 Gaislachkogl I (Tal)"), ("💺 Stabele", "🏠 Gaislachalm"),
         ("🏠 Gaislachalm", "🏠 Löple Alm"), ("🏠 Löple Alm", "⛷️ Piste 1 (Blau)"),
         ("💺 Heidebahn", "🏠 Heidealm"), ("🏠 Heidealm", "⛷️ Piste 4 (Blau)"),
-        ("🚠 Giggijochbahn (Berg)", "🏠 Wirtshaus Giggijoch"), ("🏠 Wirtshaus Giggijoch", "⛷️ Piste 13 (Blau)"),
-        ("⛷️ Piste 13 (Blau)", "🏠 Hühnersteign"), ("🏠 Hühnersteign", "🏠 s´Stabele Schirmbar"),
-        ("🏠 s´Stabele Schirmbar", "🏠 Gampe Alm"), ("🏠 Gampe Thaya", "🏠 Haimbachalm"),
-        ("🏠 Haimbachalm", "⛷️ Piste 20 (Rot)"), ("⛷️ Piste 13 (Blau)", "⛷️ Piste 19 (Rot)"),
-        ("⛷️ Piste 19 (Rot)", "🏠 Eugen's Obstlerhütte"), ("🏠 Eugen's Obstlerhütte", "🏠 Hochsölden (Ort)"),
-        ("🏠 Hochsölden (Ort)", "🏠 Sonnblick"), ("🏠 Sonnblick", "⛷️ Piste 20 (Rot)"),
-        ("💺 Silberbrünnl", "🏠 Bratkartoffel-Hütte"), ("🏠 Bratkartoffel-Hütte", "🚠 Giggijochbahn (Berg)"),
-        ("💺 Rotkogl", "🏠 Rotkogljochhütte"), ("🏠 Rotkogljochhütte", "⛷️ Piste 30 (Blau)"),
-        ("⛷️ Piste 11 (Blau)", "🏠 Schwarzkoglhuette"), ("🏠 Schwarzkoglhuette", "💺 Langegg (Zubringer)"),
-        ("⛷️ Piste 30 (Blau)", "🏠 Rettenbachalm"), ("🏠 Rettenbachalm", "🚠 Gletscherexpress"),
-        ("🚠 Gletscherexpress", "🏠 Rettenbach Market"), ("🏠 Rettenbach Market", "⛷️ Piste 32 (Blau)"),
-        ("⛷️ Piste 32 (Blau)", "🏠 Gletschertisch"), ("🚠 Tiefenbachbahn", "🏠 Panorama Restaurant Tiefenbach"),
-        ("🏠 Panorama Restaurant Tiefenbach", "⛷️ Piste 38 (Blau)"), ("🚠 Gaislachkogl I (Tal)", "🚠 Gaislachkogl I (Mittel)"),
-        ("🚠 Gaislachkogl I (Mittel)", "🚠 Gaislachkogl II (Gipfel)"), ("🚠 Giggijochbahn (Tal)", "🚠 Giggijochbahn (Berg)"),
-        ("💺 Langegg (Zubringer)", "🚠 Gaislachkogl I (Mittel)"), ("💺 Einzeiger", "🚠 Gletscherexpress")
-    ]
-    for u, v in edges:
-        G.add_edge(u, v)
-    return G, nodes
-
-G, nodes = build_soelden_graph()
-
-# --- UI ---
-st.title("⛷️ Sölden Ski-Navi: Hütten & Lifte")
-if img_data is None:
-    st.error("Bild konnte nicht geladen werden.")
-    st.stop()
-
-st.sidebar.title("🔍 Filter & Auswahl")
-kategorie_start = st.sidebar.radio("Start-Kategorie:", ["Alle", "⛷️ Pisten", "🏠 Hütten", "🚠 Lifte"])
-kategorie_ziel = st.sidebar.radio("Ziel-Kategorie:", ["Alle", "⛷️ Pisten", "🏠 Hütten", "🚠 Lifte"])
-
-def filter_nodes(kategorie):
-    if kategorie == "⛷️ Pisten": return [n for n in nodes.keys() if "⛷️" in n]
-    elif kategorie == "🏠 Hütten": return [n for n in nodes.keys() if "🏠" in n]
-    elif kategorie == "🚠 Lifte": return [n for n in nodes.keys() if "🚠" in n or "💺" in n]
-    return sorted(nodes.keys())
-
-start = st.sidebar.radio("Dein Standort", filter_nodes(kategorie_start))
-ziel = st.sidebar.radio("Wohin willst du?", filter_nodes(kategorie_ziel))
-show_coords = st.sidebar.checkbox("Koordinaten-Helfer (für neue Punkte)")
-
-# --- KARTEN-KONFIGURATION ---
-img_height, img_width = 2000, 3000
-map_bounds = [[0, 0], [img_height, img_width]]
-
-m = folium.Map(
-    crs='Simple',
-    location=[img_height / 2, img_width / 2],
-    zoom_start=-4, # Weit herausgezoomt für Übersicht
-    min_zoom=-6,
-    max_zoom=1,
-    tiles=None,
-    max_bounds=True,
-    min_lat=-500, max_lat=img_height + 500,
-    min_lon=-500, max_lon=img_width + 500
-)
-
-folium.raster_layers.ImageOverlay(
-    image=f"data:image/jpeg;base64,{img_data}",
-    bounds=map_bounds,
-    zindex=1,
-    interactive=True
-).add_to(m)
-
-m.fit_bounds(map_bounds)
-# CSS Fix
-m.get_root().header.add_child(folium.Element("""
-    <style>
-        .folium-map { background-color: white !important; }
-        .leaflet-container { background: #ffffff !important; outline: 0; }
-    </style>
-"""))
-
-if show_coords:
-    m.add_child(folium.LatLngPopup())
-
-# --- MARKER & ROUTE ---
-if start in nodes:
-    folium.map.Marker(
-        location=nodes[start],
-        icon=folium.DivIcon(
-            html=f"""<div style="font-size: 30pt; color: green; position: relative; top: -40px; text-align: center;">
-                        <div style="animation: bounce 1s infinite;">⬇️</div>
-                     </div>
-                     <style>@keyframes bounce {{ 0%, 100% {{ transform: translateY(0); }} 50% {{ transform: translateY(-15px); }} }}</style>"""
-        )
-    ).add_to(m)
-
-# --- DER KOORDINATEN-HELFER (Wichtig für dich!) ---
-if show_coords:
-    # Zeigt ein Popup mit den Klick-Koordinaten an
-    m.add_child(folium.LatLngPopup())
-    st.sidebar.info("💡 **Anleitung:** Klicke auf die Karte. Die Zahlen im Popup (y, x) kannst du kopieren und oben im Code bei den Nodes einfügen.")
-
-route_guide = ""
-if start != ziel:
-    try:
-        path = nx.shortest_path(G, source=start, target=ziel)
-        path_coords = [nodes[node] for node in path]
-        folium.PolyLine(path_coords, color="red", weight=8, opacity=0.8).add_to(m)
-        folium.Marker(location=path_coords[-1], icon=folium.Icon(color="red", icon="flag", prefix="fa")).add_to(m)
-        
-        guide = []
-        for i, s in enumerate(path):
-            if i == 0: guide.append(f"🏁 **Start:** {s}")
-            elif i == len(path)-1: guide.append(f"🎯 **Ziel:** {s}")
-            else: guide.append(s)
-        route_guide = " ➔ ".join(guide)
-    except nx.NetworkXNoPath:
-        st.sidebar.warning("Keine Verbindung gefunden.")
-
-# --- ANZEIGE (Schön kompakt) ---
-col1, col2, col3 = st.columns([1, 8, 1])
-with col2:
-    # Wir reduzieren die Höhe auf 500, damit man den Guide darunter sieht
-    output = st_folium(m, width=None, height=500, key="soelden_final", use_container_width=True)
-
-# Falls du geklickt hast, zeigen wir die Koordinaten auch nochmal als Text an (einfacher zum Kopieren)
-if show_coords and output is not None and output.get("last_clicked"):
-    clicked = output["last_clicked"]
-    st.success(f"Geklickte Koordinaten: `{clicked['lat']:.0f}, {clicked['lng']:.0f}`")
-
-if route_guide:
-    st.markdown("### 🗺️ Dein Ski-Guide")
-    st.info(route_guide)
-
-# --- ANZEIGE (KOMPAKT) ---
-# Wir nutzen Spalten, um die Karte mittig und schmaler zu machen
-col1, col2, col3 = st.columns([1, 4, 1])
-
-with col2:
-    st_folium(
-        m, 
-        width=700,         # Feste Breite macht die Karte handlicher
-        height=450,        # Etwas geringere Höhe für bessere Übersicht
-        key="soelden_final_compact", 
-        use_container_width=True # Sorgt für Responsivität innerhalb der Spalte
-    )
-
-if route_guide:
-    st.info(route_guide)
+        ("🚠 Giggijochbahn (Berg)", "🏠 Wirtshaus Giggijoch"), ("🏠 Wirt
