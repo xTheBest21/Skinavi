@@ -99,4 +99,111 @@ def build_soelden_graph():
         ("🏠 Silbertaler Alm", "🚠 Gaislachkogl I (Tal)"), ("💺 Stabele", "🏠 Gaislachalm"),
         ("🏠 Gaislachalm", "🏠 Löple Alm"), ("🏠 Löple Alm", "⛷️ Piste 1 (Blau)"),
         ("💺 Heidebahn", "🏠 Heidealm"), ("🏠 Heidealm", "⛷️ Piste 4 (Blau)"),
-        ("🚠 Giggijochbahn (Berg)", "🏠 Wirtshaus Giggijoch"), ("🏠 Wirt
+        ("🚠 Giggijochbahn (Berg)", "🏠 Wirtshaus Giggijoch"), ("🏠 Wirtshaus Giggijoch", "⛷️ Piste 13 (Blau)"),
+        ("⛷️ Piste 13 (Blau)", "🏠 Hühnersteign"), ("🏠 Hühnersteign", "🏠 s´Stabele Schirmbar"),
+        ("🏠 s´Stabele Schirmbar", "🏠 Gampe Alm"), ("🏠 Gampe Thaya", "🏠 Haimbachalm"),
+        ("🏠 Haimbachalm", "⛷️ Piste 20 (Rot)"), ("⛷️ Piste 13 (Blau)", "⛷️ Piste 19 (Rot)"),
+        ("⛷️ Piste 19 (Rot)", "🏠 Eugen's Obstlerhütte"), ("🏠 Eugen's Obstlerhütte", "🏠 Hochsölden (Ort)"),
+        ("🏠 Hochsölden (Ort)", "🏠 Sonnblick"), ("🏠 Sonnblick", "⛷️ Piste 20 (Rot)"),
+        ("💺 Silberbrünnl", "🏠 Bratkartoffel-Hütte"), ("🏠 Bratkartoffel-Hütte", "🚠 Giggijochbahn (Berg)"),
+        ("💺 Rotkogl", "🏠 Rotkogljochhütte"), ("🏠 Rotkogljochhütte", "⛷️ Piste 30 (Blau)"),
+        ("⛷️ Piste 11 (Blau)", "🏠 Schwarzkoglhuette"), ("🏠 Schwarzkoglhuette", "💺 Langegg (Zubringer)"),
+        ("⛷️ Piste 30 (Blau)", "🏠 Rettenbachalm"), ("🏠 Rettenbachalm", "🚠 Gletscherexpress"),
+        ("🚠 Gletscherexpress", "🏠 Rettenbach Market"), ("🏠 Rettenbach Market", "⛷️ Piste 32 (Blau)"),
+        ("⛷️ Piste 32 (Blau)", "🏠 Gletschertisch"), ("🚠 Tiefenbachbahn", "🏠 Panorama Restaurant Tiefenbach"),
+        ("🏠 Panorama Restaurant Tiefenbach", "⛷️ Piste 38 (Blau)"), ("🚠 Gaislachkogl I (Tal)", "🚠 Gaislachkogl I (Mittel)"),
+        ("🚠 Gaislachkogl I (Mittel)", "🚠 Gaislachkogl II (Gipfel)"), ("🚠 Giggijochbahn (Tal)", "🚠 Giggijochbahn (Berg)"),
+        ("💺 Langegg (Zubringer)", "🚠 Gaislachkogl I (Mittel)"), ("💺 Einzeiger", "🚠 Gletscherexpress")
+    ]
+    for u, v in edges:
+        G.add_edge(u, v)
+    return G, nodes
+
+G, nodes = build_soelden_graph()
+
+# --- UI Sidebar ---
+st.sidebar.title("🔍 Auswahl & Navigation")
+kategorie_start = st.sidebar.radio("Start-Kategorie:", ["Alle", "⛷️ Pisten", "🏠 Hütten", "🚠 Lifte"])
+kategorie_ziel = st.sidebar.radio("Ziel-Kategorie:", ["Alle", "⛷️ Pisten", "🏠 Hütten", "🚠 Lifte"])
+
+def filter_nodes(kategorie):
+    if kategorie == "⛷️ Pisten": return [n for n in nodes.keys() if "⛷️" in n]
+    elif kategorie == "🏠 Hütten": return [n for n in nodes.keys() if "🏠" in n]
+    elif kategorie == "🚠 Lifte": return [n for n in nodes.keys() if "🚠" in n or "💺" in n]
+    return sorted(nodes.keys())
+
+start = st.sidebar.radio("Dein Standort", filter_nodes(kategorie_start))
+ziel = st.sidebar.radio("Wohin willst du?", filter_nodes(kategorie_ziel))
+show_coords = st.sidebar.checkbox("Koordinaten-Helfer (Klick auf Karte)")
+
+# --- KARTEN-LOGIK ---
+# Wichtig: Nutze die Originalmaße deines Bildes
+img_height, img_width = 3504, 4958
+map_bounds = [[0, 0], [img_height, img_width]]
+
+m = folium.Map(
+    crs='Simple',
+    location=[img_height / 2, img_width / 2],
+    zoom_start=-3,
+    min_zoom=-5,
+    max_zoom=1,
+    tiles=None,
+    max_bounds=True
+)
+
+folium.raster_layers.ImageOverlay(
+    image=f"data:image/jpeg;base64,{img_data}",
+    bounds=map_bounds,
+    zindex=1
+).add_to(m)
+
+m.fit_bounds(map_bounds)
+
+# --- Marker & Navigation ---
+if start in nodes:
+    folium.map.Marker(
+        location=nodes[start],
+        icon=folium.DivIcon(
+            html=f"""<div style="font-size: 30pt; color: green; position: relative; top: -40px; text-align: center;">
+                        <div style="animation: bounce 1s infinite;">⬇️</div>
+                     </div>
+                     <style>@keyframes bounce {{ 0%, 100% {{ transform: translateY(0); }} 50% {{ transform: translateY(-15px); }} }}</style>"""
+        )
+    ).add_to(m)
+
+route_guide = ""
+if start != ziel:
+    try:
+        path = nx.shortest_path(G, source=start, target=ziel)
+        path_coords = [nodes[node] for node in path]
+        folium.PolyLine(path_coords, color="red", weight=8, opacity=0.8).add_to(m)
+        folium.Marker(location=path_coords[-1], icon=folium.Icon(color="red", icon="flag")).add_to(m)
+        
+        guide = []
+        for i, s in enumerate(path):
+            if i == 0: guide.append(f"🏁 **Start:** {s}")
+            elif i == len(path)-1: guide.append(f"🎯 **Ziel:** {s}")
+            else: guide.append(s)
+        route_guide = " ➔ ".join(guide)
+    except nx.NetworkXNoPath:
+        st.sidebar.warning("Keine Verbindung gefunden.")
+
+if show_coords:
+    m.add_child(folium.LatLngPopup())
+
+# --- FINALE ANZEIGE (NUR EINMAL!) ---
+output = st_folium(
+    m, 
+    width=None, 
+    height=750,           # Erhöhte Höhe für bessere Sichtbarkeit am Monitor
+    use_container_width=True, 
+    key="soelden_main_map"
+)
+
+# Hilfs-Output für Koordinaten
+if show_coords and output and output.get("last_clicked"):
+    clicked = output["last_clicked"]
+    st.success(f"Geklickte Koordinaten: `{clicked['lat']:.0f}, {clicked['lng']:.0f}`")
+
+if route_guide:
+    st.info(route_guide)
