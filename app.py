@@ -128,6 +128,10 @@ start = st.sidebar.selectbox("Dein Standort", sorted(nodes.keys()))
 ziel = st.sidebar.selectbox("Wohin willst du?", sorted(nodes.keys()))
 show_coords = st.sidebar.checkbox("Koordinaten-Helfer (für neue Punkte)")
 
+# Koordinaten-Klick-Helfer (LatLngPopup)
+if show_coords:
+    m.add_child(folium.LatLngPopup())
+    
 # --- KARTE INITIALISIEREN ---
 map_bounds = [[0, 0], [1000, 1400]]
 m = folium.Map(crs='Simple', location=[500, 700], zoom_start=-0.5)
