@@ -193,5 +193,9 @@ if st.sidebar.button("Route berechnen"):
     except nx.NetworkXNoPath:
         st.error("Keine Verbindung gefunden!")
 
+# Koordinaten-Klick-Helfer (LatLngPopup)
+if show_coords:
+    m.add_child(folium.LatLngPopup())
+    
 # Anzeige
 st_folium(m, width=1100, height=700)
