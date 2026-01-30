@@ -217,7 +217,6 @@ show_coords = st.sidebar.checkbox("Koordinaten-Helfer (für neue Punkte)")
     
 # 1. Wir definieren die Grenzen etwas weiter, damit das Handy nicht "blockiert"
 map_bounds = [[0, 0], [3504, 4958]]
-)
 
 # 3. Das Bild hinzufügen
 folium.raster_layers.ImageOverlay(
