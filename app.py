@@ -238,7 +238,7 @@ folium.raster_layers.ImageOverlay(
     image=f"data:image/jpeg;base64,{img_data}",
     bounds=map_bounds,
     zindex=1,
-    interactive=True # Wichtig für Touch
+    interactive=false # Wichtig für Touch
 ).add_to(m)
 
 # 1. Definieren der Bildgröße (Pixel deines JPEGs)
