@@ -242,15 +242,15 @@ if start in nodes:
         )
     ).add_to(m)
 
-# --- AUTOMATISCHE ROUTEN-LOGIK (Kein Button mehr nötig) ---
+# --- AUTOMATISCHE ROUTEN-LOGIK ---
+route_guide = ""
 
-# Wir berechnen die Route nur, wenn Start und Ziel nicht gleich sind
 if start != ziel:
     try:
         path = nx.shortest_path(G, source=start, target=ziel)
         path_coords = [nodes[node] for node in path]
         
-        # 1. Die rote Linie und das Ziel direkt zur Karte 'm' hinzufügen
+        # 1. Die rote Linie und das Ziel zur Karte hinzufügen
         folium.PolyLine(path_coords, color="red", weight=8, opacity=0.8).add_to(m)
         folium.Marker(
             location=path_coords[-1],
@@ -258,24 +258,31 @@ if start != ziel:
             popup=f"ZIEL: {ziel}"
         ).add_to(m)
         
-        # 2. Den Guide-Text vorbereiten
-        route_guide = " ➔ ".join(path)
+        # 2. Den Guide-Text intelligent zusammenbauen
+        guide_schritte = []
+        for i, station in enumerate(path):
+            if i == 0:
+                guide_schritte.append(f"🏁 **Start:** {station}")
+            elif i == len(path) - 1:
+                guide_schritte.append(f"🎯 **Ziel:** {station}")
+            elif "⛷️" in station:
+                guide_schritte.append(f"Abfahrt {station}")
+            elif "🚠" in station or "💺" in station:
+                guide_schritte.append(f"Lift {station}")
+            else:
+                guide_schritte.append(station)
+        
+        route_guide = " ➔ ".join(guide_schritte)
         
     except nx.NetworkXNoPath:
-        st.sidebar.warning("Keine direkte Pistenverbindung gefunden.")
+        st.sidebar.warning("Keine direkte Pistenverbindung gefunden. Wir arbeiten an weiteren Pisten!")
         route_guide = ""
-else:
-    route_guide = ""
-    # Wenn Start == Ziel, zeigen wir nur den Startpfeil (ist bereits oben im Code)
 
-# --- ANZEIGE DER KARTE ---
-# Wichtig: 'key' hilft Streamlit, die Karte beim Switchen der Ziele flüssig darzustellen
-st_folium(m, width=1100, height=700, key="soelden_map_auto")
-
-# --- ANZEIGE DER KARTE ---
-st_folium(m, width=1100, height=700, key="soelden_map")
+# --- ANZEIGE DER KARTE (Nur einmal aufrufen!) ---
+st_folium(m, width=1100, height=700, key="soelden_map_final")
 
 # --- ANZEIGE DES GUIDES (Unter der Karte) ---
 if route_guide:
-    st.markdown("### 🗺️ Dein Weg zum Ziel")
-    st.success(f"**Route:** {route_guide}")
+    st.markdown("### 🗺️ Dein persönlicher Ski-Guide")
+    # Benutze info für eine schicke blaue Box oder success für grün
+    st.info(route_guide)
