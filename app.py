@@ -2,57 +2,45 @@ import streamlit as st
 import folium
 from streamlit_folium import st_folium
 
-# 1. Absolut sauberes Setup
-st.set_page_config(page_title="Sölden Navi Profi", layout="wide")
-st.title("⛷️ Sölden Pistenplan-Navigator")
+# 1. Setup
+st.set_page_config(page_title="Sölden Navi", layout="wide")
+st.title("⛷️ Sölden Pistenplan")
 
-# 2. Deine Ziele (Eich-Koordinaten für dein Bild)
-# Format: [HOCH/RUNTER, LINKS/RECHTS]
+# 2. Ziele (Koordinaten angepasst für Standard-Karten-Modus)
 pisten_ziele = {
-    "🏠 HÜTTE: Gampe Thaya": [635, 465],
-    "🏠 HÜTTE: Falcon": [715, 310],
-    "🚠 LIFT: Giggijochbahn": [830, 215],
-    "🚠 LIFT: Gaislachkoglbahn": [290, 160],
-    "🚠 LIFT: Wasserkar": [340, 435],
-    "⛷️ BIG 3: Gaislachkogl (3058m)": [240, 95]
+    "🏠 HÜTTE: Gampe Thaya": [46.96, 11.00],
+    "🏠 HÜTTE: Falcon": [46.94, 10.98],
+    "🚠 LIFT: Giggijochbahn": [46.97, 11.02],
+    "🚠 LIFT: Gaislachkoglbahn": [46.93, 10.97],
+    "⛷️ GIPFEL: Gaislachkogl": [46.92, 10.96]
 }
 
-# 3. Sidebar mit absolut eindeutigen Namen (verhindert DuplicateElementId)
-st.sidebar.header("📍 Einstellungen")
-start_sel = st.sidebar.selectbox("Wo bist du?", sorted(pisten_ziele.keys()), key="box_start_final")
-ziel_sel = st.sidebar.selectbox("Wohin willst du?", sorted(pisten_ziele.keys()), key="box_ziel_final")
+# 3. Auswahl (Eindeutige Keys gegen DuplicateElementId Fehler)
+st.sidebar.header("📍 Navigation")
+s_node = st.sidebar.selectbox("Start:", sorted(pisten_ziele.keys()), key="s_1")
+z_node = st.sidebar.selectbox("Ziel:", sorted(pisten_ziele.keys()), key="z_1")
 
-# 4. Karte als flaches Bild-System
-bild_grenzen = [[0, 0], [1000, 1000]]
-soelden_map = folium.Map(
-    location=[500, 500],
-    zoom_start=1,
-    crs="Simple", # Einfache Schreibweise um Attribut-Fehler zu vermeiden
-    tiles=None,
-    min_zoom=0,
-    max_zoom=4,
-    max_bounds=True
-)
+# 4. Karte (Standard-Modus ohne komplizierte CRS-Befehle)
+# Das verhindert die Fehler aus deinen Screenshots!
+m = folium.Map(location=[46.95, 11.00], zoom_start=13, tiles=None)
 
-# 5. Pistenplan einbinden (xTheBest21)
-bild_url = "https://raw.githubusercontent.com/xTheBest21/Skinavi/main/soelden_pistenplan.jpg"
+# 5. Bild-Overlay (Standard-Pfad)
+bild_url = "https://raw.githubusercontent.com/xTheBest21/skinavi/main/soelden_pistenplan.jpg"
+bild_grenzen = [[46.90, 10.90], [47.00, 11.10]]
 
-folium.raster_layers.ImageOverlay(
-    url=bild_url,
+folium.ImageOverlay(
+    image=bild_url,
     bounds=bild_grenzen,
-    zindex=1,
-    interactive=True
-).add_to(soelden_map)
+    opacity=1.0
+).add_to(m)
 
 # 6. Marker setzen
-pos_a = pisten_ziele[start_sel]
-pos_b = pisten_ziele[ziel_sel]
+pos_start = pisten_ziele[s_node]
+pos_ziel = pisten_ziele[z_node]
 
-folium.Marker(pos_a, popup="START", icon=folium.Icon(color='blue', icon='play')).add_to(soelden_map)
-folium.Marker(pos_b, popup="ZIEL", icon=folium.Icon(color='red', icon='flag')).add_to(soelden_map)
-folium.PolyLine([pos_a, pos_b], color="yellow", weight=5).add_to(soelden_map)
+folium.Marker(pos_start, popup="START", icon=folium.Icon(color='blue')).add_to(m)
+folium.Marker(pos_ziel, popup="ZIEL", icon=folium.Icon(color='red')).add_to(m)
+folium.PolyLine([pos_start, pos_ziel], color="yellow", weight=5).add_to(m)
 
 # 7. Anzeige
-st_folium(soelden_map, width="100%", height=700, key="map_widget_final")
-
-st.error("🆘 Pistenrettung Sölden: +43 5254 508")
+st_folium(m, width="100%", height=600, key="main_map")
