@@ -22,7 +22,7 @@ def get_image_base64(url):
             if img.mode != "RGB":
                 img = img.convert("RGB")
             buffered = BytesIO()
-            img.save(buffered, format="JPG")
+            img.save(buffered, format="JPEG")
             return base64.b64encode(buffered.getvalue()).decode()
     except Exception as e:
         return None
