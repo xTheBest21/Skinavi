@@ -6,16 +6,13 @@ from streamlit_folium import st_folium
 st.set_page_config(page_title="Sölden Navi", layout="wide")
 st.title("⛷️ Sölden Pistenplan")
 
-# 2. Auswahlmenü
+# 2. Deine Ziele (Achte auf die Kommas am Ende der Zeilen!)
 pisten_ziele = {
-    "🚠 Giggijochbahn": [46.975, 11.030], # Probier diese Werte
+    "🚠 Giggijochbahn": [46.975, 11.030],
     "🚠 Gaislachkoglbahn": [46.935, 10.975],
     "🏠 Gampe Thaya": [46.962, 11.015],
     "🏠 Falcon Restaurant": [46.942, 10.992]
-}
-start = st.sidebar.selectbox("Start:", list(ziele.keys()), key="s1")
-ziel = st.sidebar.selectbox("Ziel:", list(ziele.keys()), key="z1")
-
+} # Diese Klammer in Zeile 16 muss genau einmal da sein
 # 3. Die Karte (Ganz simpel ohne CRS-Zusätze)
 m = folium.Map(location=[46.95, 11.00], zoom_start=13)
 
