@@ -281,7 +281,7 @@ if start != ziel:
         route_guide = ""
 
 # --- ANZEIGE DER KARTE (Nur einmal aufrufen!) ---
-st_folium(m, width=1100, height=700, key="soelden_map_final")
+st_folium(m, width=1100, height=700, key="soelden_map_fix")
 
 # --- ANZEIGE DES GUIDES (Unter der Karte) ---
 if route_guide:
