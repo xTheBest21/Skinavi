@@ -33,7 +33,6 @@ def get_image_base64(url):
 img_data = get_image_base64(IMAGE_URL)
 
 Das ist eine gute Frage! Die neuen Pisten (Abfahrten) müssen direkt in die Funktion build_soelden_graph() eingebaut werden, und zwar genau unter die Liste der Lifte (edges).
-
 Hier ist der komplette, aktualisierte Teil der Funktion. Du kannst diesen Block einfach über deinen alten build_soelden_graph drüberkopieren:
 
 Python
