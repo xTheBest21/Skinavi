@@ -7,7 +7,6 @@ st.set_page_config(page_title="Sölden Navi", layout="wide")
 st.title("⛷️ Sölden Pistenplan")
 
 # 2. Auswahlmenü
-st.sidebar.header("Navigation")
 ziele = {
     "Giggijoch": [46.97, 11.02],
     "Gaislachkogl": [46.93, 10.97]
@@ -19,9 +18,9 @@ ziel = st.sidebar.selectbox("Ziel:", list(ziele.keys()), key="z1")
 m = folium.Map(location=[46.95, 11.00], zoom_start=13)
 
 # 4. Das Bild (Pistenplan)
-# Wir nutzen die einfachste ImageOverlay-Methode
+# Wir nutzen die stabilste Methode für das Bild
 bild_url = "https://raw.githubusercontent.com/xTheBest21/skinavi/main/soelden_pistenplan.jpg"
-folium.ImageOverlay(
+folium.raster_layers.ImageOverlay(
     image=bild_url,
     bounds=[[46.90, 10.90], [47.00, 11.10]],
     opacity=1.0
