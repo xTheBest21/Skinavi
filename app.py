@@ -114,8 +114,7 @@ def build_soelden_graph():
         ("🏠 Hochsölden (Ort)", "🏠 Gampe Thaya"),
         ("🏠 Gampe Thaya", "🚠 Giggijochbahn (Tal)"), # Talabfahrt
         ("💺 Rotkogl", "💺 Langegg (Zubringer)") # Verbindungsweg
-    ]
-        edges += [
+        
         # Gaislachkogl
         ("🚠 Gaislachkogl I (Mittel)", "⛷️ Piste 1 (Gaislachkogl Talfahrt)"),
         ("⛷️ Piste 1 (Gaislachkogl Talfahrt)", "🚠 Gaislachkogl I (Tal)"),
