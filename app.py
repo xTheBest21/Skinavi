@@ -2,46 +2,43 @@ import streamlit as st
 import folium
 from streamlit_folium import st_folium
 
-# 1. Grund-Setup
-st.set_page_config(page_title="Sölden Pisten-Navi", layout="wide")
-st.title("⛷️ Sölden: Interaktiver Pistenplan")
+st.set_page_config(page_title="Sölden Navi Tool", layout="wide")
+st.title("⛷️ Sölden: Hütten-Positionierer")
 
-# 2. HÜTTEN-LISTE (Pixel-Werte von 0 bis 1000)
-# [Y = Hoch/Runter, X = Links/Rechts]
-# Ändere diese Zahlen, um die Hütten auf dem Bild zu verschieben!
+# 1. Deine Hütten-Liste (Pixel-System 0-1000)
+# Ändere diese Zahlen nach dem Klicken auf die Karte!
 pisten_ziele = {
-    "🏠 Eugen's Obstlerhütte": [630, 750], # Beispielwert: weit oben, eher rechts
+    "🏠 Eugen's Obstlerhütte": [630, 750], 
     "🏠 Gampe Thaya": [580, 680],
-    "🏠 Falcon Restaurant": [420, 320],
-    "🏠 Ice Q (Gipfel)": [780, 180],
-    "🚠 Giggijochbahn Tal": [200, 850],
-    "🚠 Gaislachkoglbahn Tal": [200, 250]
+    "🚠 Giggijoch Tal": [200, 850]
 }
 
-# 3. Auswahlmenü
-st.sidebar.header("📍 Navigation")
-start = st.sidebar.selectbox("Mein Standort:", sorted(pisten_ziele.keys()), key="s_px")
-ziel = st.sidebar.selectbox("Ziel wählen:", sorted(pisten_ziele.keys()), key="z_px")
+# 2. Auswahl
+ziel = st.sidebar.selectbox("Suche Hütte:", sorted(pisten_ziele.keys()))
 
-# 4. Karte im Bild-Modus (Pixel-System)
-# Wir definieren den Rahmen fest von 0 bis 1000
-bounds = [[0, 0], [1000, 1000]]
+# 3. Karte im Bild-Modus
 m = folium.Map(
     location=[500, 500],
     zoom_start=1,
-    crs="Simple", # Nutzt Pixel statt GPS-Koordinaten
+    crs="Simple", 
     tiles=None,
     max_bounds=True
 )
 
-# 5. Pistenplan als Hintergrundbild
+# 4. Bild laden
 bild_url = "https://raw.githubusercontent.com/xTheBest21/skinavi/main/soelden_pistenplan.jpg"
+folium.raster_layers.ImageOverlay(url=bild_url, bounds=[[0, 0], [1000, 1000]]).add_to(m)
 
-folium.raster_layers.ImageOverlay(
-    url=bild_url,
-    bounds=bounds,
-    interactive=True
-).add_to(m)
+# 5. Marker
+folium.Marker(pisten_ziele[ziel], popup=ziel, icon=folium.Icon(color='red')).add_to(m)
 
-# 6. Marker & Route einzeichnen
-pos_a = pisten_ziele[start]
+# 6. Klick-Funktion aktivieren
+m.add_child(folium.LatLngPopup())
+
+# 7. Anzeige
+data = st_folium(m, width="100%", height=700)
+
+# 8. HIER ABLESEN:
+if data and data.get("last_clicked"):
+    st.success(f"Geklickte Position für den Code: [{round(data['last_clicked']['lat'], 1)}, {round(data['last_clicked']['lng'], 1)}]")
+    st.write("Kopiere diese Zahlen oben in deine 'pisten_ziele' Liste!")
