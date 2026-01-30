@@ -77,7 +77,7 @@ show_coords = st.sidebar.checkbox("Koordinaten-Helfer anzeigen")
 m = folium.Map(crs='Simple', bounds=IMAGE_BOUNDS, zoom_start=1)
 
 # Bild einfügen
-folium.RasterLayers.ImageOverlay(
+folium.rasterLayers.ImageOverlay(
     image=f"data:image/jpeg;base64,{img_data}",
     bounds=IMAGE_BOUNDS,
     opacity=1.0
