@@ -3,29 +3,40 @@ import folium
 from streamlit_folium import st_folium
 from streamlit_js_eval import streamlit_js_eval
 import requests
+import json
+import os
 
 # 1. Seite einrichten
 st.set_page_config(page_title="SkiNavi Sölden", layout="wide")
 st.title("⛷️ Sölden Real-Pisten-Navi")
 
-# 2. Pisten-Daten laden (nur einmal!)
+DATA_FILE = "soelden_pisten.json"
+
+# 2. Daten laden (mit Offline-Speicher-Logik)
 @st.cache_data
 def load_ski_data():
-    overpass_url = "http://overpass-api.de/api/interpreter"
-    query = """
-    [out:json];
-    way["piste:type"](46.93, 10.95, 47.00, 11.05);
-    out geom;
-    """
-    try:
-        response = requests.get(overpass_url, params={'data': query})
-        return response.json()
-    except:
-        return {"elements": []}
+    if os.path.exists(DATA_FILE):
+        with open(DATA_FILE, "r") as f:
+            return json.load(f)
+    else:
+        overpass_url = "http://overpass-api.de/api/interpreter"
+        query = """
+        [out:json];
+        way["piste:type"](46.93, 10.95, 47.00, 11.05);
+        out geom;
+        """
+        try:
+            response = requests.get(overpass_url, params={'data': query})
+            data = response.json()
+            with open(DATA_FILE, "w") as f:
+                json.dump(data, f)
+            return data
+        except:
+            return {"elements": []}
 
 data = load_ski_data()
 
-# 3. GPS Standort abrufen (NUR EINMAL im gesamten Code!)
+# 3. GPS Standort abrufen
 location = streamlit_js_eval(
     js_expressions="navigator.geolocation.getCurrentPosition(pos => {return {lat: pos.coords.latitude, lon: pos.coords.longitude}})", 
     key="unique_gps_key" 
@@ -40,13 +51,31 @@ huetten = {
 ziel_name = st.selectbox("Wohin möchtest du?", list(huetten.keys()))
 
 # 5. Die Karte bauen
-m = folium.Map(location=[46.9655, 11.0088], zoom_start=13)
+m = folium.Map(location=[46.9655, 11.0088], zoom_start=14)
 
-# Echte Pisten einzeichnen
+# Farbschema für Pisten
+pisten_farben = {
+    "easy": "blue",
+    "intermediate": "red",
+    "advanced": "black",
+    "expert": "black"
+}
+
+# Pisten einzeichnen
 for element in data.get('elements', []):
     if 'geometry' in element:
         points = [(p['lat'], p['lon']) for p in element['geometry']]
-        folium.PolyLine(points, color="gray", weight=1, opacity=0.5).add_to(m)
+        tags = element.get('tags', {})
+        schwierigkeit = tags.get('piste:difficulty', 'unknown')
+        farbe = pisten_farben.get(schwierigkeit, "gray")
+        
+        folium.PolyLine(
+            points, 
+            color=farbe, 
+            weight=3 if farbe != "gray" else 1, 
+            opacity=0.7,
+            tooltip=tags.get('name', 'Piste')
+        ).add_to(m)
 
 # Standort und Ziel eintragen
 if location:
@@ -56,46 +85,13 @@ if location:
     ziel_coords = huetten[ziel_name]
     folium.Marker(ziel_coords, popup=ziel_name, icon=folium.Icon(color='red')).add_to(m)
     
-    # Grüne Linie als Orientierung
-    folium.PolyLine([my_pos, ziel_coords], color="green", weight=4).add_to(m)
-    st.success("Standort gefunden! Grüne Linie zeigt die Richtung.")
+    # Grüne Orientierungslinie
+    folium.PolyLine([my_pos, ziel_coords], color="green", weight=4, dash_array='5, 5').add_to(m)
+    st.success("Route bereit! Die gestrichelte Linie zeigt die Richtung.")
 else:
-    st.info("Warte auf GPS-Signal... Bitte bestätige die Standort-Abfrage im Browser.")
+    st.info("Warte auf GPS... Bitte oben im Browser 'Erlauben' klicken.")
 
-# Karte im Vollbild-Modus anzeigen
+# Karte anzeigen
 st_folium(m, width="100%", height=600)
-# ... (dein restlicher Code oben bleibt gleich) ...
-
-# 5. Die Karte bauen mit farbigen Pisten
-m = folium.Map(location=[46.9655, 11.0088], zoom_start=13)
-
-# Farbschema definieren
-pisten_farben = {
-    "easy": "blue",
-    "intermediate": "red",
-    "advanced": "black",
-    "expert": "black"
-}
-
-# Echte Pisten einzeichnen
-for element in data.get('elements', []):
-    if 'geometry' in element:
-        points = [(p['lat'], p['lon']) for p in element['geometry']]
-        
-        # Schwierigkeit aus den Daten auslesen
-        tags = element.get('tags', {})
-        schwierigkeit = tags.get('piste:difficulty', 'unknown')
-        
-        # Farbe bestimmen (Standard ist Grau, wenn unbekannt)
-        farbe = pisten_farben.get(schwierigkeit, "gray")
-        breite = 3 if farbe != "gray" else 1
-        
-        folium.PolyLine(
-            points, 
-            color=farbe, 
-            weight=breite, 
-            opacity=0.7,
-            tooltip=tags.get('name', 'Piste')
-        ).add_to(m)
 
 # ... (dein restlicher Standort-Code unten bleibt gleich) ...
