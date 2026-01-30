@@ -10,7 +10,7 @@ from PIL import Image
 # 1. Seite konfigurieren
 st.set_page_config(page_title="Ski Navi Sölden", layout="wide")
 
-# --- KORREKTUR ZEILE 14: Der saubere Link ---
+# Bild-URL
 IMAGE_URL = "https://raw.githubusercontent.com/xTheBest21/Skinavi/main/soelden_pistenplan.jpg"
 IMAGE_BOUNDS = [[0, 0], [1000, 1400]]
 
@@ -63,7 +63,7 @@ G, nodes = build_soelden_graph()
 # --- UI ---
 st.title("⛷️ Ski Navi Sölden")
 
-# --- KORREKTUR ZEILE 71: Vollständige Fehlerbehandlung ---
+# Fehlerprüfung
 if img_data is None or "Fehler" in str(img_data):
     st.error(f"⚠️ Bild konnte nicht geladen werden: {img_data}")
     st.stop()
@@ -76,8 +76,8 @@ show_coords = st.sidebar.checkbox("Koordinaten-Helfer anzeigen")
 # --- KARTE ---
 m = folium.Map(crs='Simple', bounds=IMAGE_BOUNDS, zoom_start=1)
 
-# Bild einfügen
-folium.rasterLayers.ImageOverlay(
+# --- HIER WAR DER FEHLER (jetzt korrigiert: raster_layers kleingeschrieben) ---
+folium.raster_layers.ImageOverlay(
     image=f"data:image/jpeg;base64,{img_data}",
     bounds=IMAGE_BOUNDS,
     opacity=1.0
