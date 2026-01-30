@@ -7,12 +7,13 @@ import json
 import os
 import math
 
-# 1. Konfiguration
+# 1. Seite konfigurieren
 st.set_page_config(page_title="SkiNavi Sölden", page_icon="⛷️", layout="wide")
 st.title("⛷️ Sölden: Profi-Navigator")
 
-DATA_FILE = "soelden_final.json"
+DATA_FILE = "soelden_final_master.json"
 
+# Hilfsfunktion für Distanz
 def berechne_distanz(pos1, pos2):
     lat1, lon1 = pos1
     lat2, lon2 = pos2
@@ -22,7 +23,7 @@ def berechne_distanz(pos1, pos2):
     a = (math.sin(dlat / 2)**2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon / 2)**2)
     return radius * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
-# 2. Daten laden
+# 2. Daten laden (Pisten, Hütten, Lifte)
 @st.cache_data
 def load_ski_data():
     if os.path.exists(DATA_FILE):
@@ -42,9 +43,10 @@ def load_ski_data():
 
 data = load_ski_data()
 
-# 3. Ziele trennen
+# 3. Ziele sortieren
 huetten_dict = {}
 lifte_dict = {}
+pisten_farben = {"easy": "blue", "intermediate": "red", "advanced": "black", "expert": "black"}
 
 for element in data.get('elements', []):
     t = element.get('tags', {})
@@ -58,165 +60,54 @@ for element in data.get('elements', []):
 
 alle_ziele = {**huetten_dict, **lifte_dict}
 
-# 4. Standort-Wahl (Sidebar)
-st.sidebar.header("📍 Standort")
-modus = st.sidebar.radio("Quelle:", ["Manuell auswählen", "GPS nutzen"])
+# 4. Standortwahl (Sidebar - NUR EINMAL!)
+st.sidebar.header("📍 Einstellungen")
+modus = st.sidebar.radio("Standort-Quelle:", ["Manuell auswählen", "GPS nutzen"], key="main_mode_toggle")
 
 my_pos = None
-start_name_display = "Dein Standort"
+start_name = "Dein Standort"
 
 if modus == "GPS nutzen":
-    gps = streamlit_js_eval(js_expressions="navigator.geolocation.getCurrentPosition(pos => {return {lat: pos.coords.latitude, lon: pos.coords.longitude}})", key="gps_v7")
-    if gps: 
+    gps = streamlit_js_eval(js_expressions="navigator.geolocation.getCurrentPosition(pos => {return {lat: pos.coords.latitude, lon: pos.coords.longitude}})", key="gps_final_v9")
+    if gps:
         my_pos = [gps['lat'], gps['lon']]
-    else: 
-        st.info("Warte auf GPS... Nutze 'Manuell' falls du drinnen bist.")
+    else:
+        st.info("Warte auf GPS... Nutze 'Manuell' in der Sidebar für sofortigen Start.")
 else:
-    # Kombinierte Liste für Startpunkt
-    start_optionen = sorted(huetten_dict.keys()) + sorted(lifte_dict.keys())
-    start_name_display = st.selectbox("Wo bist du gerade?", start_optionen)
-    my_pos = alle_ziele[start_name_display]
+    auswahl_start = sorted(huetten_dict.keys()) + sorted(lifte_dict.keys())
+    start_name = st.selectbox("Wo bist du gerade?", auswahl_start, key="start_select")
+    my_pos = alle_ziele[start_name]
 
-# 5. Ziel & Karte
+# 5. Zielwahl & Karte
 if my_pos:
-    # Nach Distanz sortieren
     sortiert = sorted(alle_ziele.items(), key=lambda x: berechne_distanz(my_pos, x[1]))
     ziel_namen = [f"{n} ({berechne_distanz(my_pos, c):.1f} km)" for n, c in sortiert]
     
-    auswahl_ziel = st.selectbox("Wohin möchtest du?", ziel_namen)
+    auswahl_ziel = st.selectbox("Wohin möchtest du?", ziel_namen, key="target_select")
     reiner_ziel_name = auswahl_ziel.split(" (")[0]
     ziel_coords = alle_ziele[reiner_ziel_name]
 
     # Karte
     m = folium.Map(location=my_pos, zoom_start=15)
-    folium.Marker(my_pos, popup="START", icon=folium.Icon(color='blue', icon='person', prefix='fa')).add_to(m)
     
-    # Farbe: Lift=orange, Hütte=red
-    farbe = 'orange' if 'LIFT' in reiner_ziel_name else 'red'
-    folium.Marker(ziel_coords, popup=reiner_ziel_name, icon=folium.Icon(color=farbe, icon='star')).add_to(m)
-    
-    folium.PolyLine([my_pos, ziel_coords], color="green", weight=4, dash_array='5, 5').add_to(m)
-    st_folium(m, width="100%", height=500)
-
-    # Checkliste
-    st.markdown("---")
-    st.subheader("📋 Etappen-Plan")
-    st.checkbox(f"Abfahrt von {start_name_display}")
-    st.checkbox(f"Ziel {reiner_ziel_name} ansteuern")
-    import streamlit as st
-import folium
-from streamlit_folium import st_folium
-from streamlit_js_eval import streamlit_js_eval
-import requests
-import json
-import os
-import math
-
-# 1. Konfiguration
-st.set_page_config(page_title="SkiNavi Sölden", page_icon="⛷️", layout="wide")
-st.title("⛷️ Sölden: Profi-Navigator mit Pistenfarben")
-
-DATA_FILE = "soelden_final_v8.json"
-
-def berechne_distanz(pos1, pos2):
-    lat1, lon1 = pos1
-    lat2, lon2 = pos2
-    radius = 6371
-    dlat = math.radians(lat2 - lat1)
-    dlon = math.radians(lon2 - lon1)
-    a = (math.sin(dlat / 2)**2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon / 2)**2)
-    return radius * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-
-# 2. Daten laden (Pisten, Hütten & Lifte)
-@st.cache_data
-def load_ski_data():
-    if os.path.exists(DATA_FILE):
-        with open(DATA_FILE, "r") as f: return json.load(f)
-    else:
-        url = "http://overpass-api.de/api/interpreter"
-        query = """[out:json];(
-          way["piste:type"](46.93, 10.95, 47.00, 11.05);
-          node["amenity"~"restaurant|bar|cafe"](46.93, 10.95, 47.00, 11.05);
-          node["tourism"~"alpine_hut"](46.93, 10.95, 47.00, 11.05);
-          way["aerialway"](46.93, 10.95, 47.00, 11.05);
-        );out geom;"""
-        r = requests.get(url, params={'data': query})
-        data = r.json()
-        with open(DATA_FILE, "w") as f: json.dump(data, f)
-        return data
-
-data = load_ski_data()
-
-# 3. Ziele trennen & Pistenfarben definieren
-huetten_dict = {}
-lifte_dict = {}
-pisten_farben = {
-    "easy": "blue",
-    "intermediate": "red",
-    "advanced": "black",
-    "expert": "black"
-}
-
-for element in data.get('elements', []):
-    t = element.get('tags', {})
-    name = t.get('name')
-    if name:
-        if 'aerialway' in t and 'geometry' in element:
-            lifte_dict[f"🚠 LIFT: {name}"] = [element['geometry'][0]['lat'], element['geometry'][0]['lon']]
-        elif (t.get('amenity') in ['restaurant', 'bar', 'cafe'] or t.get('tourism') == 'alpine_hut'):
-            if 'lat' in element and 'lon' in element:
-                huetten_dict[f"🏠 HÜTTE: {name}"] = [element['lat'], element['lon']]
-
-alle_ziele = {**huetten_dict, **lifte_dict}
-
-# 4. Standort-Wahl (Sidebar)
-st.sidebar.header("📍 Standort")
-modus = st.sidebar.radio("Quelle:", ["Manuell auswählen", "GPS nutzen"])
-
-my_pos = None
-start_name_display = "Dein Standort"
-
-if modus == "GPS nutzen":
-    gps = streamlit_js_eval(js_expressions="navigator.geolocation.getCurrentPosition(pos => {return {lat: pos.coords.latitude, lon: pos.coords.longitude}})", key="gps_v8")
-    if gps: 
-        my_pos = [gps['lat'], gps['lon']]
-    else: 
-        st.info("Warte auf GPS...")
-else:
-    start_optionen = sorted(huetten_dict.keys()) + sorted(lifte_dict.keys())
-    start_name_display = st.selectbox("Wo bist du gerade?", start_optionen)
-    my_pos = alle_ziele[start_name_display]
-
-# 5. Ziel & Karte
-if my_pos:
-    sortiert = sorted(alle_ziele.items(), key=lambda x: berechne_distanz(my_pos, x[1]))
-    ziel_namen = [f"{n} ({berechne_distanz(my_pos, c):.1f} km)" for n, c in sortiert]
-    
-    auswahl_ziel = st.selectbox("Wohin möchtest du?", ziel_namen)
-    reiner_ziel_name = auswahl_ziel.split(" (")[0]
-    ziel_coords = alle_ziele[reiner_ziel_name]
-
-    # Karte erstellen
-    m = folium.Map(location=my_pos, zoom_start=15)
-    
-    # --- PISTEN ZEICHNEN ---
+    # Pisten einzeichnen
     for element in data.get('elements', []):
         if 'geometry' in element and 'piste:type' in element.get('tags', {}):
             pts = [(p['lat'], p['lon']) for p in element['geometry']]
             diff = element.get('tags', {}).get('piste:difficulty', 'unknown')
-            color = pisten_farben.get(diff, "gray")
-            folium.PolyLine(pts, color=color, weight=3, opacity=0.7, tooltip=element.get('tags', {}).get('name')).add_to(m)
+            folium.PolyLine(pts, color=pisten_farben.get(diff, "gray"), weight=3, opacity=0.7).add_to(m)
 
-    # Start & Ziel Marker
+    # Marker
     folium.Marker(my_pos, popup="START", icon=folium.Icon(color='blue', icon='person', prefix='fa')).add_to(m)
-    farbe_ziel = 'orange' if 'LIFT' in reiner_ziel_name else 'red'
-    folium.Marker(ziel_coords, popup=reiner_ziel_name, icon=folium.Icon(color=farbe_ziel, icon='star')).add_to(m)
+    farbe_z = 'orange' if 'LIFT' in reiner_ziel_name else 'red'
+    folium.Marker(ziel_coords, popup=reiner_ziel_name, icon=folium.Icon(color=farbe_z, icon='star')).add_to(m)
     folium.PolyLine([my_pos, ziel_coords], color="green", weight=4, dash_array='5, 5').add_to(m)
     
     st_folium(m, width="100%", height=500)
 
-    # --- WEGBESCHREIBUNG LOGIK ---
+    # Wegbeschreibung
     st.markdown("---")
-    st.subheader("📋 Wegbeschreibung")
-    
-    # Dynamische Tipps basierend auf der
+    st.subheader(f"📋 Weg von {start_name} nach {reiner_ziel_name}")
+    st.checkbox("1. Orientierung auf der Karte prüfen")
+    st.checkbox(f"2. Pistenmarkierungen folgen")
+    st.info(f"Distanz: {berechne_distanz(my_pos, ziel_coords):.2f} km")
