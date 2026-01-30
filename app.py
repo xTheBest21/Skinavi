@@ -210,18 +210,37 @@ start = st.sidebar.selectbox("Dein Standort", sorted(nodes.keys()))
 ziel = st.sidebar.selectbox("Wohin willst du?", sorted(nodes.keys()))
 show_coords = st.sidebar.checkbox("Koordinaten-Helfer (für neue Punkte)")
     
-# --- KARTE INITIALISIEREN ---
+# --- KARTE INITIALISIEREN (Stabilisiert) ---
+# Deine Bildgröße (muss zu den Koordinaten in nodes passen)
 map_bounds = [[0, 0], [1000, 1400]]
-m = folium.Map(crs='Simple', location=[500, 700], zoom_start=-0.5,
-tiles=None,
-background_color="white")
-# Pistenplan Overlay
+
+m = folium.Map(
+    crs='Simple', 
+    location=[500, 700], 
+    zoom_start=-0.5,
+    tiles=None,
+    # Wir setzen die Grenze: Man kann nicht aus dem Bild rausscrollen
+    max_bounds=True,
+    min_lat=0,
+    max_lat=1000,
+    min_lon=0,
+    max_lon=1400
+)
+
+# Das Bild fest auf die Karte legen
 folium.raster_layers.ImageOverlay(
     image=f"data:image/jpeg;base64,{img_data}",
     bounds=map_bounds,
     zindex=1
 ).add_to(m)
 
+# --- TRICK: Hintergrundfarbe per CSS erzwingen ---
+# Das verhindert das Schwarzwerden beim Zoomen
+m.get_root().header.add_child(folium.Element("""
+    <style>
+        .folium-map { background-color: #ffffff !important; }
+    </style>
+"""))
 # Koordinaten-Klick-Helfer (LatLngPopup)
 if show_coords:
     m.add_child(folium.LatLngPopup())
