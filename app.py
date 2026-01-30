@@ -14,6 +14,7 @@ st.title("⛷️ Sölden: Alle Hütten & Pisten")
 DATA_FILE = "soelden_total.json"
 
 # 2. Daten laden (Pisten + ALLE Hütten)
+# 2. Daten laden (Pisten + Hütten + LIFTE)
 @st.cache_data
 def load_ski_data():
     if os.path.exists(DATA_FILE):
@@ -21,44 +22,65 @@ def load_ski_data():
             return json.load(f)
     else:
         overpass_url = "http://overpass-api.de/api/interpreter"
+        # Die Query sucht jetzt nach Pisten, Gastronomie UND Liften (aerialway)
         query = """
         [out:json];
         (
           way["piste:type"](46.93, 10.95, 47.00, 11.05);
           node["amenity"~"restaurant|bar|cafe"](46.93, 10.95, 47.00, 11.05);
           node["tourism"~"alpine_hut"](46.93, 10.95, 47.00, 11.05);
+          way["aerialway"](46.93, 10.95, 47.00, 11.05);
         );
         out geom;
         """
-        response = requests.get(overpass_url, params={'data': query})
-        data = response.json()
-        with open(DATA_FILE, "w") as f:
-            json.dump(data, f)
-        return data
+        try:
+            response = requests.get(overpass_url, params={'data': query})
+            data = response.json()
+            with open(DATA_FILE, "w") as f:
+                json.dump(data, f)
+            return data
+        except:
+            return {"elements": []}
 
 data = load_ski_data()
 
-# 3. Hütten-Liste automatisch erstellen
-gefundene_huetten = {}
+# 3. Datenbank für Ziele (Hütten & Lifte) erstellen
+gefundene_ziele = {}
 for element in data.get('elements', []):
     t = element.get('tags', {})
     name = t.get('name')
-    if name and (t.get('amenity') in ['restaurant', 'bar', 'cafe'] or t.get('tourism') == 'alpine_hut'):
+    
+    # Falls es ein Lift (way mit aerialway) ist, nehmen wir den ersten Punkt der Geometrie
+    if name and 'aerialway' in t and 'geometry' in element:
+        gefundene_ziele[f"🚠 {name}"] = [element['geometry'][0]['lat'], element['geometry'][0]['lon']]
+    
+    # Falls es eine Hütte (node) ist
+    elif name and (t.get('amenity') in ['restaurant', 'bar', 'cafe'] or t.get('tourism') == 'alpine_hut'):
         if 'lat' in element and 'lon' in element:
-            gefundene_huetten[name] = [element['lat'], element['lon']]
+            gefundene_ziele[f"🏠 {name}"] = [element['lat'], element['lon']]
 
-# Sortieren
-sortierte_huetten = dict(sorted(gefundene_huetten.items()))
-
-# 4. GPS & Auswahl
+# 4. GPS & Sortierung (wie gehabt, aber mit Symbolen)
 location = streamlit_js_eval(
     js_expressions="navigator.geolocation.getCurrentPosition(pos => {return {lat: pos.coords.latitude, lon: pos.coords.longitude}})", 
-    key="gps_tracker_final" # Einzigartiger Key gegen den DuplicateElementKey Fehler
+    key="gps_tracker_v4" 
 )
 
-ziel_name = st.selectbox("Wähle eine Hütte aus:", list(sortierte_huetten.keys()))
-ziel_coords = sortierte_huetten[ziel_name]
-
+if location:
+    my_pos = [location['lat'], location['lon']]
+    
+    def dist_sort(item):
+        return berechne_distanz(my_pos, item[1])
+    
+    sortierte_liste = sorted(gefundene_ziele.items(), key=dist_sort)
+    ziel_auswahl_namen = [f"{name} ({berechne_distanz(my_pos, coords):.1f} km)" for name, coords in sortierte_liste]
+    
+    auswahl_komplett = st.selectbox("Wohin soll es gehen?", ziel_auswahl_namen)
+    reiner_name = auswahl_komplett.split(" (")[0]
+    ziel_coords = gefundene_ziele[reiner_name]
+else:
+    st.warning("Suche Standort...")
+    reiner_name = st.selectbox("Ziel wählen:", sorted(gefundene_ziele.keys()))
+    ziel_coords = gefundene_ziele[reiner_name]
 # 5. Karte & Anzeige
 m = folium.Map(location=[46.9655, 11.0088], zoom_start=13)
 
