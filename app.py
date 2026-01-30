@@ -194,9 +194,29 @@ if st.sidebar.button("Route berechnen"):
         ).add_to(m)
         
         st.success(f"Route: {' ➔ '.join(path)}")
+        # --- GUIDE ANZEIGEN ---
+        st.subheader(" Schritt-für-Schritt Guide")
         
-    except nx.NetworkXNoPath:
-        st.error("Keine Verbindung gefunden!")
+        # Wir gehen den Pfad Schritt für Schritt durch
+        for i in range(len(path) - 1):
+            punkt_a = path[i]
+            punkt_b = path[i+1]
+            
+            # Wir prüfen, ob es ein Lift oder eine Piste ist (anhand der Emojis)
+            if "🚠" in punkt_b or "💺" in punkt_b:
+                anweisung = "Fahre mit dem Lift nach"
+                icon = "🚠"
+            elif "🏠" in punkt_b:
+                anweisung = "Kehre ein bei / Ziel erreicht:"
+                icon = "🍴"
+            else:
+                anweisung = "Fahre über die Piste nach"
+                icon = "⛷️"
+            
+            # Schicke Karte für jeden Schritt
+            st.info(f"**Schritt {i+1}:** {anweisung} **{punkt_b}**")
+
+        st.balloons() # Kleiner Effekt bei Ankunft
 
 # Anzeige
 st_folium(m, width=1100, height=700)
