@@ -217,20 +217,6 @@ show_coords = st.sidebar.checkbox("Koordinaten-Helfer (für neue Punkte)")
     
 # 1. Wir definieren die Grenzen etwas weiter, damit das Handy nicht "blockiert"
 map_bounds = [[0, 0], [3504, 4958]]
-
-# 2. Die Karte mit mobilem Fokus erstellen
-m = folium.Map(
-    crs='Simple', 
-    location=[500, 700], 
-    zoom_start=13,  # Etwas näher starten für Handys
-    tiles=None,
-    # Wir erlauben dem User etwas mehr Platz zum Bewegen
-    max_bounds=True,
-    min_lat=-100, 
-    max_lat=1100,
-    min_lon=-100, 
-    max_lon=1500, # Mehr Platz nach rechts!
-    zoom_control=True
 )
 
 # 3. Das Bild hinzufügen
@@ -251,11 +237,10 @@ map_bounds = [[0, 0], [img_height, img_width]]
 m = folium.Map(
     crs='Simple', 
     location=[img_height / 2, img_width / 2], # Startet in der Mitte des Bildes
-    zoom_start=-0.01,
-    min_zomm=10,
-    max_zoom= 1,
+    zoom_start=-2,
+    min_zomm=4,
+    max_zoom=2,
     tiles=None,
-    # HIER kommen die Bounds als Begrenzung rein:
     max_bounds=True,
     min_lat=0,
     max_lat=img_height,
