@@ -33,15 +33,12 @@ m = folium.Map(
 # 5. Bild-Overlay (Der Panzer-Code ohne Unter-Pfade)
 bild_url = "https://raw.githubusercontent.com/xTheBest21/skinavi/main/soelden_pistenplan.jpg"
 
-img = folium.raster_layers.ImageOverlay(
-    name="Pistenplan",
+folium.raster_layers.ImageOverlay(
     image=bild_url,
-    bounds=[[0, 0], [1000, 1000]],
-    opacity=1.0,
+    bounds=[[0, 0], [1000, 1000]], # Das Bild spannt sich von 0 bis 1000 auf
     interactive=True
-)
-img.add_to(m)
-
+).add_to(m)
+m.fit_bounds([[0, 0], [1000, 1000]])
 # 6. Marker & Route
 pos_a = pisten_ziele[start_name]
 pos_b = pisten_ziele[ziel_name]
@@ -53,5 +50,5 @@ folium.PolyLine([pos_a, pos_b], color="yellow", weight=5).add_to(m)
 # 7. Klick-Hilfe (Zeigt dir Koordinaten beim Klicken an!)
 m.add_child(folium.LatLngPopup())
 
-# 8. Anzeige
-st_folium(m, width="100%", height=700, key="ski_map_v2026")
+# Anzeige
+st_folium(m, width="100%", height=700, key="centered_ski_map")
