@@ -33,6 +33,7 @@ m = folium.Map(
     max_lat=bild_grenzen[1][0],
     min_lon=bild_grenzen[0][1],
     max_lon=bild_grenzen[1][1]
+)
 # 5. Dein Pistenplan als Bild
 bild_url = "https://raw.githubusercontent.com/xTheBest21/skinavi/main/soelden_pistenplan.jpg"
 # Wir nutzen die stabilste Schreibweise für das Overlay
