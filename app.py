@@ -10,34 +10,33 @@ from PIL import Image
 # 1. Seite konfigurieren
 st.set_page_config(page_title="Ski Navi Sölden", layout="wide")
 
-# DER FIX FÜR ZEILE 14: Nur eine Zuweisung, korrekte Anführungszeichen
+# FIX FÜR ZEILE 14: Jetzt sauber definiert
 IMAGE_URL = "https://raw.githubusercontent.com/xTheBest21/Skinavi/main/soelden_pistenplan.jpg"
 IMAGE_BOUNDS = [[0, 0], [1000, 1400]]
 
 @st.cache_resource
 def get_image_as_base64(url):
     try:
-        # Wir laden das Bild über Requests, um Pfadprobleme auf dem Server zu umgehen
         response = requests.get(url, timeout=10)
         if response.status_code == 200:
+            # Bild verarbeiten
             img = Image.open(BytesIO(response.content))
-            # Konvertierung in RGB sorgt dafür, dass PIL das Format sicher erkennt
+            # Sicherstellen, dass es im RGB-Format ist (behebt UnidentifiedImageError)
             if img.mode in ("RGBA", "P"):
                 img = img.convert("RGB")
             buffered = BytesIO()
             img.save(buffered, format="JPEG")
             return base64.b64encode(buffered.getvalue()).decode()
     except Exception as e:
-        return f"Error: {str(e)}"
+        return f"Fehler: {str(e)}"
     return None
 
 img_b64 = get_image_as_base64(IMAGE_URL)
 
-# 2. Das Ski-Netzwerk (Punkte auf dem Plan)
+# 2. Das Ski-Netzwerk
 @st.cache_resource
 def build_soelden_graph():
     G = nx.DiGraph()
-    # Koordinaten (Y, X) - Schätzwerte passend zum Plan
     nodes = {
         "Gaislachkogl Tal": (130, 360),
         "Gaislachkogl Mittelstation": (400, 310),
@@ -53,10 +52,7 @@ def build_soelden_graph():
     edges = [
         ("Gaislachkogl Tal", "Gaislachkogl Mittelstation", "🚠 Lift", "Gaislachkoglbahn I"),
         ("Gaislachkogl Mittelstation", "Gaislachkogl Gipfel", "🚠 Lift", "Gaislachkoglbahn II"),
-        ("Gaislachkogl Gipfel", "Gaislachkogl Mittelstation", "⛷️ Piste", "Piste 1"),
-        ("Giggijoch Tal", "Giggijoch Berg", "🚠 Lift", "Giggijochbahn"),
-        ("Giggijoch Berg", "Rettenbachgletscher", "🚠 Lift", "Gletscherexpress"),
-        ("Giggijoch Berg", "Hintere Bachlhütte", "⛷️ Piste", "Piste 11")
+        ("Giggijoch Tal", "Giggijoch Berg", "🚠 Lift", "Giggijochbahn")
     ]
     for u, v, kind, label in edges:
         G.add_edge(u, v, kind=kind, label=label)
@@ -67,41 +63,40 @@ G, nodes = build_soelden_graph()
 # --- UI ---
 st.title("⛷️ Ski Navi Sölden")
 
-# Fehlerprüfung für das Bild (Löst den Error aus image_814b55.png)
-if img_b64 is None or "Error" in str(img_b64):
-    st.error(f"Bildfehler: {img_b64}")
+# FIX FÜR ZEILE 71: Syntaxfehler behoben (Anführungszeichen korrekt)
+if img_b64 is None or "Fehler" in str(img_b64):
+    st.error(f"⚠️ Bildfehler: {img_b64}")
     st.stop()
 
 # Sidebar
 st.sidebar.header("Navigation")
 start = st.sidebar.selectbox("Start", sorted(nodes.keys()))
 ziel = st.sidebar.selectbox("Ziel", sorted(nodes.keys()))
-show_coords = st.sidebar.checkbox("Koordinaten-Helfer (für dich)")
+show_coords = st.sidebar.checkbox("Koordinaten-Helfer anzeigen")
 
 # --- KARTE ---
 m = folium.Map(crs='Simple', bounds=IMAGE_BOUNDS, zoom_start=1)
 
-# Bild einbetten (Die sicherste Methode gegen UnidentifiedImageError)
+# Bild einbetten
 folium.RasterLayers.ImageOverlay(
     image=f"data:image/jpeg;base64,{img_b64}",
     bounds=IMAGE_BOUNDS,
     opacity=1.0
 ).add_to(m)
 
-# Koordinaten-Helfer (Klick zeigt Position an)
+# Klick-Tool für neue Koordinaten
 if show_coords:
     m.add_child(folium.LatLngPopup())
-    st.sidebar.info("Klicke auf das Bild, um Y/X Koordinaten für neue Punkte zu sehen!")
 
-if st.sidebar.button("Weg berechnen"):
+if st.sidebar.button("Route berechnen"):
     try:
         path = nx.shortest_path(G, source=start, target=ziel)
         path_coords = [nodes[node] for node in path]
         folium.PolyLine(path_coords, color="red", weight=10, opacity=0.8).add_to(m)
         folium.Marker(nodes[start], icon=folium.Icon(color='green')).add_to(m)
         folium.Marker(nodes[ziel], icon=folium.Icon(color='red')).add_to(m)
-        st.success(f"Route: {' ➔ '.join(path)}")
+        st.success(f"Weg gefunden: {' ➔ '.join(path)}")
     except:
-        st.error("Keine direkte Verbindung gefunden!")
+        st.error("Keine Verbindung gefunden.")
 
 st_folium(m, width=1000, height=700)
