@@ -1,14 +1,14 @@
 import streamlit as st
 import folium
 from streamlit_folium import st_folium
+import os
 
 # 1. Konfiguration
 st.set_page_config(page_title="SkiNavi Sölden", page_icon="⛷️", layout="wide")
 st.title("⛷️ Sölden: Pistenplan Navigator")
 
-# 2. Die "Eichung" (Koordinaten auf deinem Bild)
-# Da der Pistenplan ein Panorama ist, nutzen wir ein einfaches 0-1000 System.
-# Diese Werte musst du einmalig kurz anpassen, damit die Punkte exakt sitzen.
+# 2. Deine Ziele (Die "Eichung")
+# Die ersten Zahlen sind HOCH/RUNTER (0-1000), die zweiten LINKS/RECHTS (0-1000)
 targets = {
     "🏠 HÜTTE: Gampe Thaya": [650, 450],
     "🏠 HÜTTE: Falcon": [720, 320],
@@ -18,27 +18,25 @@ targets = {
     "⛷️ BIG 3: Gaislachkogl (3058m)": [250, 100]
 }
 
-# 3. Sidebar für die Auswahl
+# 3. Sidebar Auswahl (NUR EINMAL - verhindert DuplicateElementId)
 st.sidebar.header("📍 Navigation")
-start_name = st.sidebar.selectbox("Wo bist du?", sorted(targets.keys()), key="start")
-ziel_name = st.sidebar.selectbox("Wo willst du hin?", sorted(targets.keys()), key="ziel")
+start_name = st.sidebar.selectbox("Wo bist du?", sorted(targets.keys()), key="start_point")
+ziel_name = st.sidebar.selectbox("Wo willst du hin?", sorted(targets.keys()), key="end_point")
 
-# 4. Die Karte (Der "Bilderrahmen")
-# Wir nutzen CRS.Simple, damit das Bild flach bleibt und nicht wie eine Erdkugel zoomt
-bounds = [[0, 0], [1000, 1000]] # Die Größe des virtuellen Raums
-
+# 4. Karte vorbereiten (Eingespannter Bilderrahmen)
+bounds = [[0, 0], [1000, 1000]]
 m = folium.Map(
-    location=[500, 500], # Startet in der Mitte des Bildes
+    location=[500, 500],
     zoom_start=1,
-    crs=folium.crs.Simple, 
+    crs=folium.CRS.Simple, # Korrekte Schreibweise für CRS
     tiles=None,
     min_zoom=0,
     max_zoom=4,
     max_bounds=True
 )
 
-# 5. Dein Pistenplan als Hintergrund
-# Ersetze xTheBest21 und den Repository-Namen falls nötig
+# 5. Pistenplan als Hintergrund
+# Ersetze xTheBest21 durch deinen Namen falls nötig
 image_url = "https://raw.githubusercontent.com/xTheBest21/skinavi/main/soelden_pistenplan.jpg"
 
 folium.raster_layers.ImageOverlay(
@@ -54,10 +52,9 @@ ziel_pos = targets[ziel_name]
 folium.Marker(start_pos, popup=f"START: {start_name}", icon=folium.Icon(color='blue', icon='play')).add_to(m)
 folium.Marker(ziel_pos, popup=f"ZIEL: {ziel_name}", icon=folium.Icon(color='red', icon='flag')).add_to(m)
 
-# Verbindungslinie (Luftlinie auf dem Plan)
 folium.PolyLine([start_pos, ziel_pos], color="yellow", weight=5, opacity=0.7).add_to(m)
 
-# 7. Anzeige in der App
+# 7. Anzeige
 st_folium(m, width="100%", height=700, use_container_width=True)
 
-st.info("💡 **Bedienung:** Wähle links deinen Standort und dein Ziel. Die gelbe Linie zeigt dir die Richtung auf dem Pistenplan.")
+st.info("💡 Nutze die Auswahl links, um Marker auf dem Plan zu setzen.")
