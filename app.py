@@ -86,7 +86,11 @@ def build_soelden_graph():
         
     return G, nodes
 # --- UI ---
+# 5. UI INITIALISIEREN
 st.title("⛷️ Ski Navi Sölden")
+start = st.sidebar.selectbox("Start", sorted(nodes.keys()))
+ziel = st.sidebar.selectbox("Ziel", sorted(nodes.keys()))
+show_coords = st.sidebar.checkbox("Koordinaten-Helfer anzeigen")
 
 # Fehlerprüfung
 if img_data is None or "Fehler" in str(img_data):
@@ -126,7 +130,27 @@ m.fit_bounds(map_bounds)
 # nachdem die Karte geladen wurde. Das verhindert das "Verschwinden".
 m.max_bounds = True
 m.options['maxBounds'] = map_bounds
+# 7. ROUTEN-BERECHNUNG (DIESEN CODE HIER EINFÜGEN)
+if st.sidebar.button("Route berechnen"):
+    try:
+        path = nx.shortest_path(G, source=start, target=ziel)
+        path_coords = [nodes[node] for node in path]
+        
+        # Linie zeichnen
+        folium.PolyLine(path_coords, color="red", weight=10, opacity=0.7).add_to(m)
+        
+        # Start-Marker (Grün)
+        folium.CircleMarker(path_coords[0], radius=10, color="green", fill=True).add_to(m)
+        
+        # Ziel-Marker (Blau)
+        folium.CircleMarker(path_coords[-1], radius=10, color="blue", fill=True).add_to(m)
+        
+        st.success(f"Route: {' ➔ '.join(path)}")
+    except:
+        st.error("Keine Verbindung gefunden!")
 
+# 8. KARTE ANZEIGEN (Das ist immer die letzte Zeile)
+st_folium(m, width=1000, height=700)
 # Helfer-Tool
 if show_coords:
     m.add_child(folium.LatLngPopup())
