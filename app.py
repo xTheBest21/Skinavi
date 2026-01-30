@@ -3,7 +3,7 @@ import networkx as nx
 import folium
 from streamlit_folium import st_folium
 
-st.title("Sölden Ski-Navigator ⛷️")
+st.title("Ski Navi ⛷️")
 
 # 1. Netzwerk-Daten definieren (Beispiel-Daten Sölden)
 @st.cache_resource
