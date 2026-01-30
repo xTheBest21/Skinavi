@@ -35,55 +35,77 @@ def build_soelden_graph():
     G = nx.DiGraph()
     
     # KNOTEN: Name : (Y, X)
-    nodes = {
-        # --- GAISLACHKOGL ---
+  nodes = {
+        # --- SEKTOR GAISLACHKOGL ---
         "🚠 Gaislachkogl I (Tal)": (130, 360),
         "🚠 Gaislachkogl I (Mittel)": (400, 310),
         "🚠 Gaislachkogl II (Gipfel)": (610, 280),
         "💺 Heidebahn": (450, 420),
         "💺 Wasserkar": (480, 350),
+        "💺 Stabele": (430, 450),
         "🏠 Falcon Restaurant": (405, 330),
-        "🏠 ice Q (Gipfel)": (615, 290),
+        "🏠 ice Q": (615, 290),
         "🏠 Bubis Schihütte": (320, 400),
         "🏠 Annemaries Hütte": (350, 380),
         "🏠 Gaislachalm": (300, 420),
+        "🏠 Löple Alm": (310, 430),
+        "🏠 Heidealm": (440, 430),
 
-        # --- GIGGIJOCH ---
+        # --- SEKTOR GIGGIJOCH / HOCHSÖLDEN ---
         "🚠 Giggijochbahn (Tal)": (70, 750),
         "🚠 Giggijochbahn (Berg)": (510, 880),
         "💺 Silberbrünnl": (580, 950),
+        "💺 Rosskirpl": (550, 980),
+        "💺 Hainbachkar": (530, 920),
+        "💺 Seekogl": (500, 950),
         "💺 Rotkogl": (620, 780),
+        "💺 Giggijoch Sessel": (520, 850),
         "🏠 Wirtshaus Giggijoch": (515, 895),
-        "🏠 Hühnersteign": (450, 820),
         "🏠 Gampe Thaya": (400, 750),
+        "🏠 Gampe Lamm": (390, 740),
+        "🏠 Hühnersteign": (450, 820),
+        "🏠 Hochsölden (Ort)": (350, 850),
+        "🏠 Sonnblick": (340, 840),
 
-        # --- VERBINDUNG & GLETSCHER ---
+        # --- VERBINDUNG GOLDEN GATE ---
         "💺 Langegg (Zubringer)": (420, 600),
         "💺 Einzeiger": (550, 620),
         "🚠 Gletscherexpress": (650, 550),
+
+        # --- GLETSCHER ---
+        "🚠 Schwarze Schneid I": (720, 500),
         "🚠 Schwarze Schneid II": (850, 400),
-        "🏠 Gletschertisch": (710, 510)
+        "🚠 Tiefenbachbahn": (750, 250),
+        "💺 Seiterjöchl": (700, 350),
+        "🏠 Gletschertisch": (710, 510),
+        "🏠 Rettenbach Market": (700, 480)
     }
     
     for name, pos in nodes.items():
         G.add_node(name, pos=pos)
 
-    # VERBINDUNGEN
+   # ERWEITERTE VERBINDUNGEN (LIFTE & PISTEN)
     edges = [
-        # Lifte
+        # LIFTE (Hoch)
         ("🚠 Gaislachkogl I (Tal)", "🚠 Gaislachkogl I (Mittel)"),
         ("🚠 Gaislachkogl I (Mittel)", "🚠 Gaislachkogl II (Gipfel)"),
         ("🚠 Giggijochbahn (Tal)", "🚠 Giggijochbahn (Berg)"),
         ("💺 Langegg (Zubringer)", "🚠 Gaislachkogl I (Mittel)"),
         ("💺 Einzeiger", "🚠 Gletscherexpress"),
-        # Pisten/Zustiege
-        ("🚠 Gaislachkogl II (Gipfel)", "🏠 ice Q (Gipfel)"),
+        ("💺 Silberbrünnl", "💺 Rotkogl"),
+        ("💺 Stabele", "🚠 Gaislachkogl I (Mittel)"),
+        
+        # PISTEN & HÜTTEN-ZUSTIEGE (Runter)
+        ("🚠 Gaislachkogl II (Gipfel)", "🏠 ice Q"),
         ("🚠 Gaislachkogl I (Mittel)", "🏠 Falcon Restaurant"),
         ("🚠 Gaislachkogl I (Mittel)", "🏠 Annemaries Hütte"),
         ("🏠 Annemaries Hütte", "🏠 Bubis Schihütte"),
         ("🏠 Bubis Schihütte", "🏠 Gaislachalm"),
         ("🚠 Giggijochbahn (Berg)", "🏠 Hühnersteign"),
-        ("🏠 Hühnersteign", "🏠 Gampe Thaya")
+        ("🏠 Hühnersteign", "🏠 Hochsölden (Ort)"),
+        ("🏠 Hochsölden (Ort)", "🏠 Gampe Thaya"),
+        ("🏠 Gampe Thaya", "🚠 Giggijochbahn (Tal)"), # Talabfahrt
+        ("💺 Rotkogl", "💺 Langegg (Zubringer)") # Verbindungsweg
     ]
     
     for u, v in edges:
