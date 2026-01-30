@@ -94,3 +94,38 @@ st_folium(m, width="100%", height=700)
 distanz = berechne_distanz(my_pos, ziel_pos)
 st.info(f"Distanz zwischen {start_name} und {ziel_name}: ca. {distanz:.2f} km")
 st.error("🆘 Notruf Pistenrettung: +43 5254 508")
+# --- 5. Handy-optimierte Karte ---
+# Wir nutzen 'use_container_width=True' und setzen eine feste Höhe, die auf Handys gut aussieht
+map_height = 600 # Eine gute Höhe für die meisten Smartphones
+
+# Karten-Objekt mit Start-Zoom für das Panorama
+m = folium.Map(
+    location=[46.9655, 11.0088], 
+    zoom_start=13, 
+    tiles=None,
+    zoom_control=True, # Wichtig für die Bedienung mit dem Daumen
+    scrollWheelZoom=True
+)
+
+# Das Bild (Pistenplan) hinzufügen
+image_url = "https://raw.githubusercontent.com/xTheBest21/skinavi/main/soelden_pistenplan.jpg"
+bild_grenzen = [[46.920, 10.930], [47.010, 11.060]]
+
+folium.raster_layers.ImageOverlay(
+    image=image_url,
+    bounds=bild_grenzen,
+    opacity=1.0,
+    interactive=True, # Erlaubt das Klicken auf Markierungen auf dem Bild
+    cross_origin=True,
+    zindex=1
+).add_to(m)
+
+# Marker für Start und Ziel
+folium.Marker(my_pos, popup=f"START: {start_name}", icon=folium.Icon(color='blue', icon='play')).add_to(m)
+folium.Marker(ziel_pos, popup=f"ZIEL: {ziel_name}", icon=folium.Icon(color='red', icon='flag')).add_to(m)
+
+# Gelbe Linie (Richtungshilfe)
+folium.PolyLine([my_pos, ziel_pos], color="yellow", weight=5, opacity=0.8).add_to(m)
+
+# Die Karte in Streamlit anzeigen (optimiert für mobile Container)
+st_folium(m, width=None, height=map_height, use_container_width=True)
