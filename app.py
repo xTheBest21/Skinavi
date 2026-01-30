@@ -151,7 +151,7 @@ def build_soelden_graph():
         ("🚠 Schwarze Schneid II", "⛷️ Piste 30 (Gletscherverbindung)"),
         ("⛷️ Piste 30 (Gletscherverbindung)", "💺 Einzeiger"),
         ("🚠 Tiefenbachbahn", "⛷️ Piste 38 (Tiefenbachferner)"),
-        ("⛷️ Piste 38 (Tiefenbachferner)", "🏠 Gletschertisch")
+        ("⛷️ Piste 38 (Tiefenbachferner)", "🏠 Gletschertisch"),
 
         # --- SEKTOR GIGGIJOCH ---
         ("🚠 Giggijochbahn (Berg)", "⛷️ Piste 13 (Giggijoch Hauptpiste)"),
@@ -187,7 +187,7 @@ def build_soelden_graph():
         ("🏠 Rettenbach Market", "🚠 Schwarze Schneid I"),
         ("🚠 Schwarze Schneid I", "🚠 Schwarze Schneid II"),
         ("🚠 Schwarze Schneid II", "⛷️ Piste 32 (Rettenbachferner)"),
-        ("⛷️ Piste 32 (Rettenbachferner)", "🏠 Gletschertisch")
+        ("⛷️ Piste 32 (Rettenbachferner)", "🏠 Gletschertisch"),
     ]
     
     for u, v in edges:
