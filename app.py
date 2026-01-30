@@ -4,7 +4,8 @@ from streamlit_folium import st_folium
 from streamlit_js_eval import streamlit_js_eval
 import requests
 import json
-import os
+import os  # <--- Das hat gefehlt!
+import math
 
 st.set_page_config(
     page_title="SkiNavi Sölden",
