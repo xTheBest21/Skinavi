@@ -241,6 +241,33 @@ folium.raster_layers.ImageOverlay(
     interactive=True # Wichtig für Touch
 ).add_to(m)
 
+# 1. Definieren der Bildgröße (Pixel deines JPEGs)
+# Wenn dein Bild z.B. 1400x1000 Pixel hat:
+img_height = 4958
+img_width = 3504
+map_bounds = [[0, 0], [img_height, img_width]]
+
+# 2. Die Karte erstellen
+m = folium.Map(
+    crs='Simple', 
+    location=[img_height / 2, img_width / 2], # Startet in der Mitte des Bildes
+    zoom_start=-0.5,
+    tiles=None,
+    # HIER kommen die Bounds als Begrenzung rein:
+    max_bounds=True,
+    min_lat=0,
+    max_lat=img_height,
+    min_lon=0,
+    max_lon=img_width
+)
+
+# 3. Das Bild auf genau diese Bounds legen
+folium.raster_layers.ImageOverlay(
+    image=f"data:image/jpeg;base64,{img_data}",
+    bounds=map_bounds,  # HIER wird das Bild "festgeklebt"
+    zindex=1
+).add_to(m)
+
 # 4. Der ultimative CSS-Fix gegen das Schwarzwerden (speziell für Mobile)
 m.get_root().header.add_child(folium.Element("""
     <style>
