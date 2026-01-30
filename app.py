@@ -1,115 +1,63 @@
 import streamlit as st
 import folium
 from streamlit_folium import st_folium
-from streamlit_js_eval import streamlit_js_eval
-import requests
-import json
-import os
-import math
 
 # 1. Konfiguration
 st.set_page_config(page_title="SkiNavi Sölden", page_icon="⛷️", layout="wide")
-st.title("⛷️ Sölden: Original Pistenplan-Navigator")
+st.title("⛷️ Sölden: Pistenplan Navigator")
 
-DATA_FILE = "soelden_data.json"
+# 2. Die "Eichung" (Koordinaten auf deinem Bild)
+# Da der Pistenplan ein Panorama ist, nutzen wir ein einfaches 0-1000 System.
+# Diese Werte musst du einmalig kurz anpassen, damit die Punkte exakt sitzen.
+targets = {
+    "🏠 HÜTTE: Gampe Thaya": [650, 450],
+    "🏠 HÜTTE: Falcon": [720, 320],
+    "🚠 LIFT: Giggijochbahn": [850, 200],
+    "🚠 LIFT: Gaislachkoglbahn": [300, 150],
+    "🚠 LIFT: Wasserkar": [350, 450],
+    "⛷️ BIG 3: Gaislachkogl (3058m)": [250, 100]
+}
 
-# Hilfsfunktion für Distanz (Luftlinie)
-def berechne_distanz(pos1, pos2):
-    lat1, lon1 = pos1
-    lat2, lon2 = pos2
-    radius = 6371
-    dlat = math.radians(lat2 - lat1)
-    dlon = math.radians(lon2 - lon1)
-    a = (math.sin(dlat / 2)**2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon / 2)**2)
-    return radius * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-
-# 2. Daten laden (Pisten & Hütten)
-@st.cache_data
-def load_ski_data():
-    if os.path.exists(DATA_FILE):
-        with open(DATA_FILE, "r") as f: return json.load(f)
-    else:
-        url = "http://overpass-api.de/api/interpreter"
-        query = """[out:json];(
-          node["amenity"~"restaurant|bar|cafe"](46.93, 10.95, 47.00, 11.05);
-          node["tourism"~"alpine_hut"](46.93, 10.95, 47.00, 11.05);
-          way["aerialway"](46.93, 10.95, 47.00, 11.05);
-        );out geom;"""
-        r = requests.get(url, params={'data': query})
-        data = r.json()
-        with open(DATA_FILE, "w") as f: json.dump(data, f)
-        return data
-
-data = load_ski_data()
-
-# 3. Ziele aufbereiten (34 Lifte, diverse Hütten)
-huetten = {}
-lifte = {}
-for element in data.get('elements', []):
-    t = element.get('tags', {})
-    name = t.get('name')
-    if name:
-        if 'aerialway' in t:
-            lifte[f"🚠 LIFT: {name}"] = [element['geometry'][0]['lat'], element['geometry'][0]['lon']]
-        else:
-            huetten[f"🏠 HÜTTE: {name}"] = [element.get('lat'), element.get('lon')]
-
-alle_ziele = {**huetten, **lifte}
-
-# 4. Standort & Ziel Wahl (In der Sidebar für mehr Platz)
+# 3. Sidebar für die Auswahl
 st.sidebar.header("📍 Navigation")
-start_name = st.sidebar.selectbox("Dein Standort (Start):", sorted(alle_ziele.keys()))
-ziel_name = st.sidebar.selectbox("Dein Ziel:", sorted(alle_ziele.keys()))
+start_name = st.sidebar.selectbox("Wo bist du?", sorted(targets.keys()), key="start")
+ziel_name = st.sidebar.selectbox("Wo willst du hin?", sorted(targets.keys()), key="ziel")
 
-my_pos = alle_ziele[start_name]
-ziel_pos = alle_ziele[ziel_name]
+# 4. Die Karte (Der "Bilderrahmen")
+# Wir nutzen CRS.Simple, damit das Bild flach bleibt und nicht wie eine Erdkugel zoomt
+bounds = [[0, 0], [1000, 1000]] # Die Größe des virtuellen Raums
 
-# --- 5. Absolut fixierte Karte (Kein Zoomen über den Rand) ---
-
-# Die Grenzen deines Pistenplans (Sölden Gebiet)
-bild_grenzen = [[46.920, 10.930], [47.010, 11.060]]
-
-# Karte initialisieren
 m = folium.Map(
-    location=[46.9655, 11.0088], 
-    zoom_start=14, 
-    tiles=None,            # Keine Weltkarte im Hintergrund
-    min_zoom=14,           # WICHTIG: Erhöhe diesen Wert (14 oder 15), wenn du immer noch zu weit rauszoomen kannst
-    max_zoom=17,           # Verhindert, dass das Bild zu unscharf wird
-    max_bounds=True,       # Aktiviert die Grenzen
-    min_lat=bild_grenzen[0][0],
-    max_lat=bild_grenzen[1][0],
-    min_lon=bild_grenzen[0][1],
-    max_lon=bild_grenzen[1][1]
+    location=[500, 500], # Startet in der Mitte des Bildes
+    zoom_start=1,
+    crs=folium.crs.Simple, 
+    tiles=None,
+    min_zoom=0,
+    max_zoom=4,
+    max_bounds=True
 )
 
-# Harter Stopp an den Rändern (Viscosity)
-m.get_root().header.add_child(folium.Element(
-    "<style>.leaflet-container { background: #ffffff; }</style>"
-))
-
-# Den Pistenplan als Bild drüberlegen
-image_url = f"https://raw.githubusercontent.com/xTheBest21/skinavi/main/soelden_pistenplan.jpg"
+# 5. Dein Pistenplan als Hintergrund
+# Ersetze xTheBest21 und den Repository-Namen falls nötig
+image_url = "https://raw.githubusercontent.com/xTheBest21/skinavi/main/soelden_pistenplan.jpg"
 
 folium.raster_layers.ImageOverlay(
-    image=image_url,
-    bounds=bild_grenzen,
-    opacity=1.0,
-    zindex=1,
-    interactive=True,
-    sticky_bounds=True
+    url=image_url,
+    bounds=bounds,
+    zindex=1
 ).add_to(m)
 
-# Marker für Start und Ziel setzen
-folium.Marker(my_pos, popup=f"START: {start_name}", icon=folium.Icon(color='blue', icon='play')).add_to(m)
+# 6. Marker setzen
+start_pos = targets[start_name]
+ziel_pos = targets[ziel_name]
+
+folium.Marker(start_pos, popup=f"START: {start_name}", icon=folium.Icon(color='blue', icon='play')).add_to(m)
 folium.Marker(ziel_pos, popup=f"ZIEL: {ziel_name}", icon=folium.Icon(color='red', icon='flag')).add_to(m)
 
-# Gelbe Verbindungslinie
-folium.PolyLine([my_pos, ziel_pos], color="yellow", weight=5, opacity=0.8).add_to(m)
+# Verbindungslinie (Luftlinie auf dem Plan)
+folium.PolyLine([start_pos, ziel_pos], color="yellow", weight=5, opacity=0.7).add_to(m)
 
-# Die Karte anzeigen
-st_folium(m, width="100%", height=600, use_container_width=True)
-distanz = berechne_distanz(my_pos, ziel_pos)
-st.info(f"Distanz zwischen {start_name} und {ziel_name}: ca. {distanz:.2f} km")
-st.error("🆘 Notruf Pistenrettung: +43 5254 508")
+# 7. Anzeige in der App
+st_folium(m, width="100%", height=700, use_container_width=True)
 
+st.info("💡 **Bedienung:** Wähle links deinen Standort und dein Ziel. Die gelbe Linie zeigt dir die Richtung auf dem Pistenplan.")
