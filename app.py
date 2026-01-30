@@ -90,7 +90,7 @@ if my_pos:
         image=image_url,
         bounds=bild_grenzen,
         opacity=0.8,
-        name="Sölden Pistenplan"
+        name="soelden_pistenplan.jpg"
     ).add_to(m)
 
     folium.Marker(my_pos, popup="START", icon=folium.Icon(color='blue')).add_to(m)
