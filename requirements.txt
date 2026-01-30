@@ -1,6 +1,3 @@
 streamlit
-streamlit-folium
 folium
-requests
-streamlit-js-eval
-networkx
+streamlit-folium
