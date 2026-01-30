@@ -207,3 +207,5 @@ if show_coords and output and output.get("last_clicked"):
 
 if route_guide:
     st.info(route_guide)
+# Anzeige
+st_folium(m, width=1000, height=700)
