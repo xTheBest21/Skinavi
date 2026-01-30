@@ -224,7 +224,6 @@ folium.raster_layers.ImageOverlay(
     zindex=1,
     interactive=True # Wichtig für Touch
 ).add_to(m)
-
 # 1. Definieren der Bildgröße (Pixel deines JPEGs)
 # Wenn dein Bild z.B. 1400x1000 Pixel hat:
 img_height = 3504
