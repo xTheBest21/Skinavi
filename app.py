@@ -143,19 +143,6 @@ if show_coords:
     m.add_child(folium.LatLngPopup())
 
 # --- ROUTE BERECHNEN ---
-# 1. Start-Marker mit einem Pfeil-Icon (statt CircleMarker)
-        folium.Marker(
-            location=path_coords[0],
-            popup=f"START: {start}",
-            icon=folium.Icon(color="green", icon="arrow-down", prefix="fa") # "fa" steht für FontAwesome
-        ).add_to(m)
-        
-        # 2. Ziel-Marker (kann ein rotes Ziel-Icon sein)
-        folium.Marker(
-            location=path_coords[-1],
-            popup=f"ZIEL: {ziel}",
-            icon=folium.Icon(color="red", icon="flag", prefix="fa")
-        ).add_to(m)
 if st.sidebar.button("Route berechnen"):
     try:
         path = nx.shortest_path(G, source=start, target=ziel)
