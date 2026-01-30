@@ -216,7 +216,7 @@ ziel = st.sidebar.radio("Wohin willst du?", ziel_liste)
 show_coords = st.sidebar.checkbox("Koordinaten-Helfer (für neue Punkte)")
     
 # 1. Wir definieren die Grenzen etwas weiter, damit das Handy nicht "blockiert"
-map_bounds = [[0, 0], [1000, 1400]]
+map_bounds = [[0, 0], [3504, 4958]]
 
 # 2. Die Karte mit mobilem Fokus erstellen
 m = folium.Map(
@@ -263,7 +263,7 @@ m = folium.Map(
 
 # 3. Das Bild auf genau diese Bounds legen
 folium.raster_layers.ImageOverlay(
-    image=f"data:image/jpeg;base64,{img_data}",
+    image=f"data:image/jpg;base64,{img_data}",
     bounds=map_bounds,  # HIER wird das Bild "festgeklebt"
     zindex=1
 ).add_to(m)
