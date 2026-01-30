@@ -10,34 +10,33 @@ from PIL import Image
 # 1. Seite konfigurieren
 st.set_page_config(page_title="Ski Navi Sölden", layout="wide")
 
-# FIX FÜR ZEILE 14: Sauberer Link ohne doppelte Namen
+# --- KORREKTUR ZEILE 14: Der saubere Link ---
 IMAGE_URL = "https://raw.githubusercontent.com/xTheBest21/Skinavi/main/soelden_pistenplan.jpg"
 IMAGE_BOUNDS = [[0, 0], [1000, 1400]]
 
 @st.cache_resource
 def get_image_base64(url):
     try:
-        response = requests.get(url, timeout=15)
+        response = requests.get(url, timeout=10)
         if response.status_code == 200:
             img = Image.open(BytesIO(response.content))
-            # Falls das Bild CMYK oder RGBA ist, konvertieren wir es für Folium zu RGB
+            # Wandelt CMYK/RGBA in RGB um (verhindert Fehler bei JPGs)
             if img.mode != "RGB":
                 img = img.convert("RGB")
             buffered = BytesIO()
             img.save(buffered, format="JPEG")
             return base64.b64encode(buffered.getvalue()).decode()
     except Exception as e:
-        return f"Fehler beim Laden: {str(e)}"
+        return f"Fehler: {str(e)}"
     return None
 
-# Bild laden
 img_data = get_image_base64(IMAGE_URL)
 
 # 2. Das Ski-Netzwerk
 @st.cache_resource
 def build_soelden_graph():
     G = nx.DiGraph()
-    # Deine Stationen (Y, X)
+    # Deine Stationen
     nodes = {
         "Gaislachkogl Tal": (130, 360),
         "Gaislachkogl Mittelstation": (400, 310),
@@ -48,52 +47,55 @@ def build_soelden_graph():
     }
     for name, pos in nodes.items():
         G.add_node(name, pos=pos)
-    
+
     # Verbindungen
-    G.add_edge("Gaislachkogl Tal", "Gaislachkogl Mittelstation", label="Gaislachkoglbahn I")
-    G.add_edge("Gaislachkogl Mittelstation", "Gaislachkogl Gipfel", label="Gaislachkoglbahn II")
-    G.add_edge("Giggijoch Tal", "Giggijoch Berg", label="Giggijochbahn")
+    edges = [
+        ("Gaislachkogl Tal", "Gaislachkogl Mittelstation"),
+        ("Gaislachkogl Mittelstation", "Gaislachkogl Gipfel"),
+        ("Giggijoch Tal", "Giggijoch Berg")
+    ]
+    for u, v in edges:
+        G.add_edge(u, v)
     return G, nodes
 
 G, nodes = build_soelden_graph()
 
-# --- Benutzeroberfläche ---
+# --- UI ---
 st.title("⛷️ Ski Navi Sölden")
 
-# FIX FÜR ZEILE 71: Richtige Syntax für Fehlermeldungen
+# --- KORREKTUR ZEILE 71: Vollständige Fehlerbehandlung ---
 if img_data is None or "Fehler" in str(img_data):
-    st.error(f"⚠️ {img_data if img_data else 'Bild konnte nicht geladen werden.'}")
-    st.info("Tipp: Überprüfe, ob das Bild auf GitHub wirklich 'soelden_pistenplan.jpg' heißt.")
+    st.error(f"⚠️ Bild konnte nicht geladen werden: {img_data}")
     st.stop()
 
 # Sidebar
-start = st.sidebar.selectbox("Startpunkt", sorted(nodes.keys()))
-ziel = st.sidebar.selectbox("Zielpunkt", sorted(nodes.keys()))
-show_helper = st.sidebar.checkbox("Koordinaten-Helfer (Klick auf Karte)")
+start = st.sidebar.selectbox("Start", sorted(nodes.keys()))
+ziel = st.sidebar.selectbox("Ziel", sorted(nodes.keys()))
+show_coords = st.sidebar.checkbox("Koordinaten-Helfer anzeigen")
 
-# --- Karte erstellen ---
+# --- KARTE ---
 m = folium.Map(crs='Simple', bounds=IMAGE_BOUNDS, zoom_start=1)
 
-# Bild als Overlay hinzufügen
+# Bild einfügen
 folium.RasterLayers.ImageOverlay(
     image=f"data:image/jpeg;base64,{img_data}",
     bounds=IMAGE_BOUNDS,
     opacity=1.0
 ).add_to(m)
 
-# Klick-Helfer
-if show_helper:
+# Helfer-Tool
+if show_coords:
     m.add_child(folium.LatLngPopup())
+    st.info("Klicke auf die Karte, um Koordinaten für neue Lifte zu sehen!")
 
-# Routenberechnung
 if st.sidebar.button("Route berechnen"):
     try:
         path = nx.shortest_path(G, source=start, target=ziel)
+        # Zeichne Linie
         path_coords = [nodes[node] for node in path]
-        folium.PolyLine(path_coords, color="red", weight=8, opacity=0.8).add_to(m)
-        st.success(f"Weg gefunden: {' ➔ '.join(path)}")
+        folium.PolyLine(path_coords, color="red", weight=5).add_to(m)
+        st.success(f"Route: {' ➔ '.join(path)}")
     except:
-        st.error("Keine Verbindung gefunden!")
+        st.error("Keine Verbindung gefunden.")
 
-# Karte anzeigen
 st_folium(m, width=1000, height=700)
