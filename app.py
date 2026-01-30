@@ -9,10 +9,30 @@ st.set_page_config(page_title="Ski Navi Sölden", layout="wide")
 
 st.title("⛷️ Ski Navi Sölden (Pistenplan-Edition)")
 
-# 1. Bild-Setup
-# WICHTIG: Die Datei muss im selben Ordner wie dein Script liegen!
+import os
+from PIL import Image
+
+# ... (restlicher Code oben)
+
 IMAGE_PATH = "soelden_pistenplan.jpg"
-IMAGE_BOUNDS = [[0, 0], [1000, 1400]] # Definition der Bildgröße im Koordinatensystem
+
+# Prüfen, ob die Datei existiert
+if os.path.exists(IMAGE_PATH):
+    try:
+        img = Image.open(IMAGE_PATH)
+        st.sidebar.image(img, caption="Sölden Pistenplan")
+    except Exception as e:
+        st.sidebar.error(f"Bild konnte nicht geladen werden: {e}")
+else:
+    st.sidebar.error(f"Datei '{IMAGE_PATH}' nicht gefunden! Bitte in GitHub hochladen.")
+
+# Für das Overlay auf der Karte (falls das Bild geladen werden konnte)
+if os.path.exists(IMAGE_PATH):
+    folium.RasterLayers.ImageOverlay(
+        image=IMAGE_PATH,
+        bounds=IMAGE_BOUNDS,
+        opacity=1.0
+    ).add_to(m)
 
 @st.cache_resource
 def build_soelden_graph():
