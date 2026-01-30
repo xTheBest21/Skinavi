@@ -2,109 +2,74 @@ import streamlit as st
 import networkx as nx
 import folium
 from streamlit_folium import st_folium
-from folium import plugins
+from PIL import Image
+import os
 
-# Seiten-Konfiguration
 st.set_page_config(page_title="Ski Navi Sölden", layout="wide")
 
-st.title("⛷️ Ski Navi Sölden (Pistenplan-Edition)")
-
-import os
-from PIL import Image
-
-# ... (restlicher Code oben)
-
+# 1. Bild sicher laden
 IMAGE_PATH = "soelden_pistenplan.jpg"
+IMAGE_BOUNDS = [[0, 0], [1000, 1400]]  # Lokales Koordinatensystem für das Bild
 
-# Prüfen, ob die Datei existiert
-if os.path.exists(IMAGE_PATH):
-    try:
-        img = Image.open(IMAGE_PATH)
-        st.sidebar.image(img, caption="Sölden Pistenplan")
-    except Exception as e:
-        st.sidebar.error(f"Bild konnte nicht geladen werden: {e}")
-else:
-    st.sidebar.error(f"Datei '{IMAGE_PATH}' nicht gefunden! Bitte in GitHub hochladen.")
+def load_image(path):
+    if os.path.exists(path):
+        return Image.open(path)
+    return None
 
-# Für das Overlay auf der Karte (falls das Bild geladen werden konnte)
-if os.path.exists(IMAGE_PATH):
-    folium.RasterLayers.ImageOverlay(
-        image=IMAGE_PATH,
-        bounds=IMAGE_BOUNDS,
-        opacity=1.0
-    ).add_to(m)
+img = load_image(IMAGE_PATH)
 
+if img is None:
+    st.error(f"❌ Datei '{IMAGE_PATH}' nicht gefunden. Bitte lade sie in dein GitHub Repo hoch!")
+    st.stop()
+
+# 2. Graph mit Koordinaten passend zum Pistenplan
 @st.cache_resource
 def build_soelden_graph():
     G = nx.DiGraph()
-    
-    # KNOTEN (X, Y Koordinaten auf deinem Bild geschätzt)
-    # 0,0 ist unten links | 1000, 1400 ist oben rechts
+    # Koordinaten: (Y, X) wobei 0,0 unten links ist
     nodes = {
-        "Sölden Tal (Giggijoch)": (50, 950),
-        "Giggijoch Berg": (450, 950),
-        "Sölden Tal (Gaislachkogl)": (70, 420),
-        "Gaislachkogl Mittelstation": (380, 390),
-        "Gaislachkogl Gipfel": (620, 280),
-        "Hintere Bachlhütte": (350, 700),
-        "Rettenbachgletscher": (700, 550),
-        "Tiefenbachgletscher": (750, 200),
-        "Rotkoglbahn Berg": (550, 750)
+        "Gaislachkogl Tal": (130, 360),
+        "Gaislachkogl Mittelstation": (400, 310),
+        "Gaislachkogl Gipfel": (610, 280),
+        "Giggijoch Tal": (70, 750),
+        "Giggijoch Berg": (510, 880),
+        "Rettenbachgletscher": (700, 480),
+        "Tiefenbachgletscher": (720, 150),
+        "Hintere Bachlhütte": (350, 550)
     }
-    
     for name, pos in nodes.items():
         G.add_node(name, pos=pos)
 
-    # VERBINDUNGEN (Pisten & Lifte)
     edges = [
-        ("Sölden Tal (Gaislachkogl)", "Gaislachkogl Mittelstation", "🚠 Lift", "Gaislachkoglbahn I"),
+        ("Gaislachkogl Tal", "Gaislachkogl Mittelstation", "🚠 Lift", "Gaislachkoglbahn I"),
         ("Gaislachkogl Mittelstation", "Gaislachkogl Gipfel", "🚠 Lift", "Gaislachkoglbahn II"),
         ("Gaislachkogl Gipfel", "Gaislachkogl Mittelstation", "⛷️ Piste", "Piste 1"),
-        ("Sölden Tal (Giggijoch)", "Giggijoch Berg", "🚠 Lift", "Giggijochbahn"),
-        ("Giggijoch Berg", "Hintere Bachlhütte", "⛷️ Piste", "Piste 11"),
-        ("Giggijoch Berg", "Rotkoglbahn Berg", "🚠 Lift", "Rotkoglbahn"),
-        ("Rotkoglbahn Berg", "Rettenbachgletscher", "🚠 Lift", "Gletscherexpress"),
+        ("Giggijoch Tal", "Giggijoch Berg", "🚠 Lift", "Giggijochbahn"),
+        ("Giggijoch Berg", "Rettenbachgletscher", "🚠 Lift", "Gletscherexpress"),
+        ("Giggijoch Berg", "Hintere Bachlhütte", "⛷️ Piste", "Piste 11")
     ]
-    
     for u, v, kind, label in edges:
         G.add_edge(u, v, kind=kind, label=label)
-        
     return G, nodes
 
 G, nodes = build_soelden_graph()
 
 # --- SIDEBAR ---
-st.sidebar.image(IMAGE_PATH, caption="Sölden Pistenplan")
-start_node = st.sidebar.selectbox("Startpunkt:", options=sorted(list(nodes.keys())))
-target_node = st.sidebar.selectbox("Zielpunkt:", options=sorted(list(nodes.keys())))
-calc_btn = st.sidebar.button("Route berechnen")
+st.sidebar.title("⛷️ Ski Navi Sölden")
+st.sidebar.image(img, use_container_width=True) # Bild in Sidebar anzeigen
 
-# --- KARTE ---
-# Wir erstellen eine Karte ohne Hintergrund-Layer (crs=Simple)
+start_node = st.sidebar.selectbox("Start:", options=sorted(list(nodes.keys())))
+target_node = st.sidebar.selectbox("Ziel:", options=sorted(list(nodes.keys())))
+
+# --- HAUPTBEREICH (Karte) ---
+st.subheader("Interaktiver Pistenplan")
+
+# Erstelle Karte mit 'Simple' Koordinatensystem (kein GPS, nur Bild-Pixel)
 m = folium.Map(crs='Simple', bounds=IMAGE_BOUNDS, zoom_start=1)
 
-# Das Bild als Hintergrund-Layer hinzufügen
+# Bild-Overlay hinzufügen
 folium.RasterLayers.ImageOverlay(
-    image=IMAGE_PATH,
+    image=img, # Wir übergeben das geladene PIL-Objekt direkt
     bounds=IMAGE_BOUNDS,
-    opacity=1.0,
-    interactive=True,
-    cross_origin=False
+    opacity=1.0
 ).add_to(m)
-
-# Route einzeichnen
-if calc_btn:
-    try:
-        path = nx.shortest_path(G, source=start_node, target=target_node)
-        path_coords = [nodes[node] for node in path]
-        
-        # Linie zeichnen
-        folium.PolyLine(path_coords, color="red", weight=10, opacity=0.7).add_to(m)
-        
-        # Wegbeschreibung
-        st.info(f"Route: {' ➔ '.join(path)}")
-    except:
-        st.error("Keine Route gefunden!")
-
-# Karte anzeigen
-st_folium(m, width=1000, height=700)
