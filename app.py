@@ -35,44 +35,43 @@ img_data = get_image_base64(IMAGE_URL)
 def build_soelden_graph():
     G = nx.DiGraph()
     
+    # Namen jetzt mit Emojis für die Sidebar
     nodes = {
-        "Gaislachkogl Tal": (130, 360),
-        "Gaislachkogl Mittel": (400, 310),
-        "Gaislachkogl Gipfel": (610, 280),
-        "Heidebahn Berg": (450, 420),
-        "Wasserkar": (480, 350),
-        "Giggijoch Tal": (70, 750),
-        "Giggijoch Berg": (510, 880),
-        "Rotkogljoch": (620, 780),
-        "Silberbrünnl": (580, 950),
-        "Langegg": (420, 600),
-        "Einzeiger": (550, 620),
-        "Rettenbachferner": (720, 500),
-        "Tiefenbachferner": (750, 250),
-        "Schwarze Schneid": (850, 400)
+        # 🚠 Lifts / Stationen
+        "🚠 Gaislachkogl Tal": (130, 360),
+        "🚠 Gaislachkogl Mittel": (400, 310),
+        "🚠 Gaislachkogl Gipfel": (610, 280),
+        "🚠 Giggijoch Tal": (70, 750),
+        "🚠 Giggijoch Berg": (510, 880),
+        
+        # 🏠 Hütten / Restaurants
+        "🏠 Falcon Restaurant": (405, 330),
+        "🏠 Annemaries Hütte": (350, 380),
+        "🏠 Bubis Schihütte": (320, 400),
+        "🏠 Wirtshaus Giggijoch": (515, 895),
+        "🏠 Hühnersteign": (450, 820),
+        
+        # ❄️ Gletscher
+        "❄️ Rettenbachferner": (720, 500),
+        "❄️ Tiefenbachferner": (750, 250)
     }
     
     for name, pos in nodes.items():
         G.add_node(name, pos=pos)
 
+    # WICHTIG: Die Verbindungen müssen exakt die gleichen Namen 
+    # inklusive der Emojis nutzen!
     lifte = [
-        ("Gaislachkogl Tal", "Gaislachkogl Mittel"),
-        ("Gaislachkogl Mittel", "Gaislachkogl Gipfel"),
-        ("Giggijoch Tal", "Giggijoch Berg"),
-        ("Giggijoch Berg", "Rotkogljoch"),
-        ("Langegg", "Gaislachkogl Mittel"),
-        ("Langegg", "Einzeiger"),
-        ("Einzeiger", "Rettenbachferner"),
-        ("Rettenbachferner", "Schwarze Schneid")
+        ("🚠 Gaislachkogl Tal", "🚠 Gaislachkogl Mittel"),
+        ("🚠 Gaislachkogl Mittel", "🚠 Gaislachkogl Gipfel"),
+        ("🚠 Giggijoch Tal", "🚠 Giggijoch Berg")
     ]
     
     pisten = [
-        ("Gaislachkogl Gipfel", "Gaislachkogl Mittel"),
-        ("Gaislachkogl Mittel", "Gaislachkogl Tal"),
-        ("Giggijoch Berg", "Langegg"),
-        ("Rettenbachferner", "Einzeiger"),
-        ("Schwarze Schneid", "Rettenbachferner"),
-        ("Schwarze Schneid", "Tiefenbachferner")
+        ("🚠 Gaislachkogl Gipfel", "🚠 Gaislachkogl Mittel"),
+        ("🚠 Gaislachkogl Mittel", "🏠 Falcon Restaurant"),
+        ("🏠 Falcon Restaurant", "🚠 Gaislachkogl Mittel"), # Verbindung zurück zur Bahn
+        ("🚠 Gaislachkogl Mittel", "🏠 Annemaries Hütte")
     ]
     
     for u, v in lifte + pisten:
