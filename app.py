@@ -106,6 +106,12 @@ def build_soelden_graph():
         # --- GLETSCHER PISTEN ---
         "⛷️ Piste 32 (Rettenbachferner)": (750, 480),
         "⛷️ Piste 38 (Tiefenbachferner)": (780, 280),
+        "⛷️ Piste 7 (Giggijoch Blau)": (480, 920),
+        "⛷️ Piste 8 (Giggijoch Rot)": (460, 950),
+        "⛷️ Piste 10 (Giggijoch Verbindung)": (520, 750),
+        "⛷️ Piste 2 (Gaislachkogl Rot)": (450, 300),
+        "⛷️ Piste 23 (Langegg Abfahrt)": (400, 650),
+        "⛷️ Piste 33 (Rettenbach Steilhang)": (700, 430),
     }
     
     for name, pos in nodes.items():
