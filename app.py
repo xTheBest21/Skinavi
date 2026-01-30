@@ -8,7 +8,7 @@ from io import BytesIO
 from PIL import Image
 
 # 1. Seite konfigurieren
-st.set_page_config(page_title="Ski Navi Sölden Pro", layout="normal")
+st.set_page_config(page_title="Ski Navi Sölden Pro", layout="wide")
 
 # Bild-URL (Pistenplan)
 IMAGE_URL = "https://raw.githubusercontent.com/xTheBest21/Skinavi/main/soelden_pistenplan.jpg"
