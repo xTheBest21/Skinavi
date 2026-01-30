@@ -35,7 +35,7 @@ ziel = st.sidebar.selectbox("Ziel:", sorted(pisten_ziele.keys()))
 # 3. Die Karte (Feste Grenzen)
 # Wir setzen die Hintergrundfarbe auf Weiß, damit der graue Rand verschwindet
 m = folium.Map(
-    location=[500, 500],
+    location=[1000, 1000],
     zoom_start=1,
     crs="Simple",
     tiles=None,
