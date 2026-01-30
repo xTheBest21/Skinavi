@@ -92,9 +92,9 @@ def build_soelden_graph():
     for name, pos in nodes.items():
         G.add_node(name, pos=pos)
 
-   # ERWEITERTE VERBINDUNGEN (LIFTE & PISTEN)
+  # ERWEITERTE VERBINDUNGEN (LIFTE & PISTEN)
     edges = [
-        # LIFTE (Hoch)
+        # --- LIFTE (Weg nach oben) ---
         ("🚠 Gaislachkogl I (Tal)", "🚠 Gaislachkogl I (Mittel)"),
         ("🚠 Gaislachkogl I (Mittel)", "🚠 Gaislachkogl II (Gipfel)"),
         ("🚠 Giggijochbahn (Tal)", "🚠 Giggijochbahn (Berg)"),
@@ -103,33 +103,36 @@ def build_soelden_graph():
         ("💺 Silberbrünnl", "💺 Rotkogl"),
         ("💺 Stabele", "🚠 Gaislachkogl I (Mittel)"),
         
-        # PISTEN & HÜTTEN-ZUSTIEGE (Runter)
+        # --- DER NEUE GUIDE-WEG (Giggijoch / Hochsölden) ---
+        ("🚠 Giggijochbahn (Berg)", "🏠 Hühnersteign"),
+        ("🏠 Hühnersteign", "🏠 s´Stabele Schirmbar"),
+        ("🏠 s´Stabele Schirmbar", "🏠 Gampe Alm"),
+        ("🏠 Gampe Alm", "🏠 Gampe Thaya"),
+        ("🏠 Gampe Thaya", "⛷️ Piste 13 (Giggijoch Talabfahrt)"),
+        ("🏠 Hochsölden (Ort)", "🏠 Sonnblick"),
+        ("🏠 Sonnblick", "🏠 Gampe Alm"), # Verbindungsweg von Hochsölden
+        
+        # --- GAISLACHKOGL HÜTTEN-WEGE ---
         ("🚠 Gaislachkogl II (Gipfel)", "🏠 ice Q"),
         ("🚠 Gaislachkogl I (Mittel)", "🏠 Falcon Restaurant"),
         ("🚠 Gaislachkogl I (Mittel)", "🏠 Annemaries Hütte"),
         ("🏠 Annemaries Hütte", "🏠 Bubis Schihütte"),
         ("🏠 Bubis Schihütte", "🏠 Gaislachalm"),
-        ("🚠 Giggijochbahn (Berg)", "🏠 Hühnersteign"),
-        ("🏠 Hühnersteign", "🏠 Hochsölden (Ort)"),
-        ("🏠 Hochsölden (Ort)", "🏠 Gampe Thaya"),
-        ("🏠 Gampe Thaya", "🚠 Giggijochbahn (Tal)"), # Talabfahrt
-        ("💺 Rotkogl", "💺 Langegg (Zubringer)") # Verbindungsweg
+        ("🏠 Gaislachalm", "🏠 Löple Alm"),
+        ("🏠 Löple Alm", "⛷️ Piste 1 (Gaislachkogl Talfahrt)"),
         
-        # Gaislachkogl
+        # --- HAUPTPISTEN & VERBINDUNGEN ---
+        ("🚠 Giggijochbahn (Berg)", "⛷️ Piste 11 (Giggijoch Verbindung)"),
+        ("⛷️ Piste 11 (Giggijoch Verbindung)", "💺 Langegg (Zubringer)"),
+        ("⛷️ Piste 13 (Giggijoch Talabfahrt)", "🚠 Giggijochbahn (Tal)"),
         ("🚠 Gaislachkogl I (Mittel)", "⛷️ Piste 1 (Gaislachkogl Talfahrt)"),
         ("⛷️ Piste 1 (Gaislachkogl Talfahrt)", "🚠 Gaislachkogl I (Tal)"),
         
-        # Giggijoch
-        ("🚠 Giggijochbahn (Berg)", "⛷️ Piste 13 (Giggijoch Talabfahrt)"),
-        ("⛷️ Piste 13 (Giggijoch Talabfahrt)", "🚠 Giggijochbahn (Tal)"),
-        
-        # Verbindung Giggijoch -> Gaislachkogl
-        ("🚠 Giggijochbahn (Berg)", "⛷️ Piste 11 (Giggijoch Verbindung)"),
-        ("⛷️ Piste 11 (Giggijoch Verbindung)", "💺 Langegg (Zubringer)"),
-        
-        # Gletscher
+        # --- GLETSCHER-NETZ ---
         ("🚠 Schwarze Schneid II", "⛷️ Piste 30 (Gletscherverbindung)"),
-        ("⛷️ Piste 30 (Gletscherverbindung)", "💺 Einzeiger")
+        ("⛷️ Piste 30 (Gletscherverbindung)", "💺 Einzeiger"),
+        ("🚠 Tiefenbachbahn", "⛷️ Piste 38 (Tiefenbachferner)"),
+        ("⛷️ Piste 38 (Tiefenbachferner)", "🏠 Gletschertisch")
     ]
     
     for u, v in edges:
