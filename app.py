@@ -203,7 +203,6 @@ if st.sidebar.button("Route berechnen"):
         
         # Guide-Text erstellen
         route_guide = " ➔ ".join(path)
-        st.balloons()
     except nx.NetworkXNoPath:
         st.sidebar.error("Keine Verbindung gefunden!")
 
