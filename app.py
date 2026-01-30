@@ -80,6 +80,13 @@ def build_soelden_graph():
         "💺 Seiterjöchl": (700, 350),
         "🏠 Gletschertisch": (710, 510),
         "🏠 Rettenbach Market": (700, 480)
+
+        # --- PISTEN-VERBINDUNGEN ---
+    "⛷️ Piste 1 (Gaislachkogl Talfahrt)": (250, 350),
+    "⛷️ Piste 11 (Giggijoch Verbindung)": (480, 700),
+    "⛷️ Piste 13 (Giggijoch Talabfahrt)": (300, 800),
+    "⛷️ Piste 30 (Gletscherverbindung)": (650, 450),
+    "⛷️ Piste 38 (Tiefenbachferner)": (780, 300),
     }
     
     for name, pos in nodes.items():
@@ -107,6 +114,23 @@ def build_soelden_graph():
         ("🏠 Hochsölden (Ort)", "🏠 Gampe Thaya"),
         ("🏠 Gampe Thaya", "🚠 Giggijochbahn (Tal)"), # Talabfahrt
         ("💺 Rotkogl", "💺 Langegg (Zubringer)") # Verbindungsweg
+    ]
+        edges += [
+        # Gaislachkogl
+        ("🚠 Gaislachkogl I (Mittel)", "⛷️ Piste 1 (Gaislachkogl Talfahrt)"),
+        ("⛷️ Piste 1 (Gaislachkogl Talfahrt)", "🚠 Gaislachkogl I (Tal)"),
+        
+        # Giggijoch
+        ("🚠 Giggijochbahn (Berg)", "⛷️ Piste 13 (Giggijoch Talabfahrt)"),
+        ("⛷️ Piste 13 (Giggijoch Talabfahrt)", "🚠 Giggijochbahn (Tal)"),
+        
+        # Verbindung Giggijoch -> Gaislachkogl
+        ("🚠 Giggijochbahn (Berg)", "⛷️ Piste 11 (Giggijoch Verbindung)"),
+        ("⛷️ Piste 11 (Giggijoch Verbindung)", "💺 Langegg (Zubringer)"),
+        
+        # Gletscher
+        ("🚠 Schwarze Schneid II", "⛷️ Piste 30 (Gletscherverbindung)"),
+        ("⛷️ Piste 30 (Gletscherverbindung)", "💺 Einzeiger")
     ]
     
     for u, v in edges:
