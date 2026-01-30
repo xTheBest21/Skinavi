@@ -62,4 +62,4 @@ folium.Marker(pos_b, popup=ziel, icon=folium.Icon(color='red')).add_to(m)
 folium.PolyLine([pos_a, pos_b], color="yellow", weight=5).add_to(m)
 
 # Klick-Hilfe für die Koordinaten
-m.add_child(folium.
+m.add_child(folium.)
