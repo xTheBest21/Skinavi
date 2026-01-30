@@ -104,7 +104,7 @@ m = folium.Map(
     location=[500, 700],
     zoom_start=-0.5,
     min_zoom=-2,
-    max_zoom=5
+    max_zoom=3
 )
 
 folium.raster_layers.ImageOverlay(
