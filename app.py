@@ -169,7 +169,7 @@ folium.raster_layers.ImageOverlay(
 if show_coords:
     m.add_child(folium.LatLngPopup())
     
-# --- NEU: PFEIL ANZEIGEN (SOFORT BEI AUSWAHL) ---
+# --- PFEIL ANZEIGEN (SOFORT BEI AUSWAHL) ---
 if start in nodes:
     start_coords = nodes[start]
     folium.map.Marker(
@@ -187,48 +187,30 @@ if start in nodes:
         )
     ).add_to(m)
 
-# --- ROUTE BERECHNEN ---
+# --- ROUTEN-LOGIK (Berechnung vor der Anzeige) ---
+route_guide = ""
 if st.sidebar.button("Route berechnen"):
     try:
-        # 1. Pfad berechnen
         path = nx.shortest_path(G, source=start, target=ziel)
         path_coords = [nodes[node] for node in path]
         
-        # 2. Linie und Marker zur Karte hinzufügen
+        # Linie und Ziel-Marker zur Karte hinzufügen
         folium.PolyLine(path_coords, color="red", weight=8, opacity=0.8).add_to(m)
         folium.Marker(
             location=path_coords[-1],
-            icon=folium.Icon(color="red", icon="flag", prefix="fa"),
-            popup=f"ZIEL: {ziel}"
+            icon=folium.Icon(color="red", icon="flag", prefix="fa")
         ).add_to(m)
-
-        # 3. Den Guide unter der Karte vorbereiten (wir nutzen eine Liste für später)
-        st.success(f"Route gefunden: {len(path)-1} Abschnitte")
         
-        # --- HIER IST DER GUIDE ---
-     # --- KOMPAKTER GUIDE PRO ---
-        st.subheader("🗺️ Dein Weg zum Ziel")
-        
-        # Den Pfad schöner formatieren
-        formatted_path = []
-        for i, station in enumerate(path):
-            if i == 0:
-                formatted_path.append(f"🏁 **Start:** {station}")
-            elif i == len(path) - 1:
-                formatted_path.append(f"🎯 **Ziel:** {station}")
-            else:
-                # Hier kannst du "⛷️" oder "Piste" davor setzen, falls es kein Lift/Haus ist
-                formatted_path.append(station)
-        
-        # Mit Pfeilen verbinden
-        guide_text = " ➔ ".join(formatted_path)
-        
-        st.success(f"{guide_text}")
-
+        # Guide-Text erstellen
+        route_guide = " ➔ ".join(path)
+        st.balloons()
     except nx.NetworkXNoPath:
-        st.error("Keine Verbindung gefunden! Bitte prüfe die Pistenverbindungen.")
-    except Exception as e:
-        st.error(f"Fehler: {e}")
+        st.sidebar.error("Keine Verbindung gefunden!")
 
-# --- ENTSCHEIDEND: Diese Zeile muss ganz links stehen! ---
-st_folium(m, width=1100, height=700)
+# --- ANZEIGE DER KARTE ---
+st_folium(m, width=1100, height=700, key="soelden_map")
+
+# --- ANZEIGE DES GUIDES (Unter der Karte) ---
+if route_guide:
+    st.markdown("### 🗺️ Dein Weg zum Ziel")
+    st.success(f"**Route:** {route_guide}")
