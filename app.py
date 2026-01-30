@@ -31,7 +31,7 @@ m = folium.Map(
 )
 
 # 5. Bild-Overlay (Der Panzer-Code ohne Unter-Pfade)
-bild_url = "https://raw.githubusercontent.com/xTheBest21/skinavi/main/soelden_pistenplan.jpg"
+bild_url = "https://raw.githubusercontent.com/xTheBest21/Skinavi/main/soelden_pistenplan.jpg"
 
 folium.raster_layers.ImageOverlay(
     image=bild_url,
