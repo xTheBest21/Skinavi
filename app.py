@@ -44,4 +44,4 @@ folium.raster_layers.ImageOverlay(
 ).add_to(m)
 
 # 6. Marker & Route einzeichnen
-pos_a = pisten_ziele[start
+pos_a = pisten_ziele[start]
