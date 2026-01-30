@@ -81,34 +81,35 @@ else:
     my_pos = alle_ziele[start_name]
 
 # 5. Karte im "Sölden-Look"
+# --- 5. Die Panorama-Karte (Pistenplan) einbauen ---
+# Die Koordinaten sind so gewählt, dass das Bild über Sölden liegt
+pistenplan_url = "https://raw.githubusercontent.com/DEIN_USER/DEIN_REPO/main/soelden_pistenplan.jpg"
+
+# Die ungefähren Grenzen des Skigebiets für das Bild
+bild_grenzen = [[46.920, 10.930], [47.010, 11.060]] 
+
+m = folium.Map(location=[46.9655, 11.0088], zoom_start=13, tiles=None)
+
+# Das Bild aus deinem PDF als Hintergrund legen
+folium.Raster(
+    image=pistenplan_url,
+    bounds=bild_grenzen,
+    opacity=1.0,
+    name="Sölden Pistenplan"
+).add_to(m)
+
+# Pisten für die Interaktivität (unsichtbar darüberlegen)
+for element in data.get('elements', []):
+    if 'geometry' in element and 'piste:type' in element.get('tags', {}):
+        pts = [(p['lat'], p['lon']) for p in element['geometry']]
+        # Wir lassen die Linien fast durchsichtig, damit man den Plan sieht
+        folium.PolyLine(pts, color="blue", weight=10, opacity=0.01, 
+                        tooltip=element.get('tags', {}).get('name')).add_to(m)
+
+# Marker für Start und Ziel
 if my_pos:
-    sortiert = sorted(alle_ziele.items(), key=lambda x: berechne_distanz(my_pos, x[1]))
-    auswahl_ziel = st.selectbox("Ziel wählen:", [f"{n} ({berechne_distanz(my_pos, c):.1f} km)" for n, c in sortiert])
-    reiner_name = auswahl_ziel.split(" (")[0]
-    ziel_coords = alle_ziele[reiner_name]
-
-    # Karten-Hintergrund
-    m = folium.Map(location=my_pos, zoom_start=14, tiles="OpenStreetMap")
-
-    # Pisten zeichnen (Dicker & Kräftiger)
-    for element in data.get('elements', []):
-        if 'geometry' in element and 'piste:type' in element.get('tags', {}):
-            pts = [(p['lat'], p['lon']) for p in element['geometry']]
-            diff = element.get('tags', {}).get('piste:difficulty', 'unknown')
-            folium.PolyLine(pts, color=pisten_farben.get(diff, "gray"), weight=5, opacity=0.85).add_to(m)
-
-    # Lifte zeichnen (Schwarz/Grau gestrichelt)
-    for element in data.get('elements', []):
-        if 'aerialway' in element.get('tags', {}):
-            pts = [(p['lat'], p['lon']) for p in element['geometry']]
-            folium.PolyLine(pts, color="#333333", weight=2, dash_array='5, 5').add_to(m)
-
-    # Marker
-    folium.Marker(my_pos, popup="START", icon=folium.Icon(color='blue', icon='user', prefix='fa')).add_to(m)
-    farbe_z = 'orange' if 'LIFT' in reiner_name else 'red'
-    folium.Marker(ziel_coords, popup=reiner_name, icon=folium.Icon(color=farbe_z, icon='flag')).add_to(m)
-    
-    st_folium(m, width="100%", height=600)
+    folium.Marker(my_pos, popup="DU", icon=folium.Icon(color='blue', icon='user', prefix='fa')).add_to(m)
+    folium.Marker(ziel_coords, popup=reiner_name, icon=folium.Icon(color='red', icon='flag')).add_to(m)
     
     # Notrufnummer aus dem Plan [cite: 149]
     st.error("🆘 **Pistenrettung Sölden:** [+43 5254 508](tel:+435254508)")
