@@ -6,45 +6,33 @@ from streamlit_folium import st_folium
 st.set_page_config(page_title="Sölden Navi", layout="wide")
 st.title("⛷️ Sölden Pistenplan")
 
-# 2. Ziele einmessen (Koordinaten 0-1000 auf deinem Bild)
-# Format: [HOCH/RUNTER, LINKS/RECHTS]
+# 2. Ziele (Wir nutzen hier Standard-Koordinaten für maximale Stabilität)
 pisten_ziele = {
-    "🚠 Giggijochbahn (Tal)": [200, 800],
-    "🚠 Gaislachkoglbahn (Tal)": [200, 300],
-    "🏠 Gampe Thaya": [550, 600],
-    "🏠 Falcon Restaurant": [400, 350],
-    "⛷️ Gaislachkogl Gipfel": [750, 150]
+    "🚠 Giggijochbahn": [46.97, 11.02],
+    "🚠 Gaislachkoglbahn": [46.93, 10.97],
+    "🏠 Gampe Thaya": [46.96, 11.00],
+    "🏠 Falcon Restaurant": [46.94, 10.98]
 }
 
 # 3. Auswahl
 st.sidebar.header("Navigation")
-start = st.sidebar.selectbox("Startpunkt:", sorted(pisten_ziele.keys()), key="s1")
-ziel = st.sidebar.selectbox("Zielpunkt:", sorted(pisten_ziele.keys()), key="z1")
+start = st.sidebar.selectbox("Start:", sorted(pisten_ziele.keys()), key="s_final")
+ziel = st.sidebar.selectbox("Ziel:", sorted(pisten_ziele.keys()), key="z_final")
 
-# 4. Karte im "Bild-Modus" (Verhindert CRS-Fehler)
-# Wir definieren einen festen Rahmen von 0 bis 1000
-bounds = [[0, 0], [1000, 1000]]
-m = folium.Map(
-    location=[500, 500], 
-    zoom_start=1, 
-    crs=folium.crs.Simple, 
-    tiles=None,
-    max_bounds=True
-)
+# 4. Karte (Standard-Modus)
+m = folium.Map(location=[46.95, 11.00], zoom_start=13)
 
-# 5. Bild-Overlay (Dein Bild von GitHub)
+# 5. Bild-Overlay (Dein Pistenplan von GitHub)
 bild_url = "https://raw.githubusercontent.com/xTheBest21/skinavi/main/soelden_pistenplan.jpg"
-
-folium.raster_layers.ImageOverlay(
-    url=bild_url,
-    bounds=bounds,
-    interactive=True
+folium.ImageOverlay(
+    image=bild_url,
+    bounds=[[46.90, 10.90], [47.00, 11.10]],
+    opacity=1.0
 ).add_to(m)
 
 # 6. Marker setzen
 folium.Marker(pisten_ziele[start], popup="START", icon=folium.Icon(color='blue')).add_to(m)
 folium.Marker(pisten_ziele[ziel], popup="ZIEL", icon=folium.Icon(color='red')).add_to(m)
-folium.PolyLine([pisten_ziele[start], pisten_ziele[ziel]], color="yellow", weight=5).add_to(m)
 
 # 7. Anzeige
-st_folium(m, width="100%", height=700, key="soelden_final_map")
+st_folium(m, width="100%", height=700, key="map_v21")
