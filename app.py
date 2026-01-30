@@ -127,7 +127,7 @@ ziel = st.sidebar.radio("Wohin willst du?", filter_nodes(kategorie_ziel))
 show_coords = st.sidebar.checkbox("Koordinaten-Helfer (für neue Punkte)")
 
 # --- KARTEN-KONFIGURATION ---
-img_height, img_width = 3504, 4958
+img_height, img_width = 2000, 3000
 map_bounds = [[0, 0], [img_height, img_width]]
 
 m = folium.Map(
