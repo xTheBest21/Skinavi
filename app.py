@@ -79,7 +79,7 @@ def build_soelden_graph():
         "🚠 Tiefenbachbahn": (750, 250),
         "💺 Seiterjöchl": (700, 350),
         "🏠 Gletschertisch": (710, 510),
-        "🏠 Rettenbach Market": (700, 480)
+        "🏠 Rettenbach Market": (700, 480),
 
         # --- PISTEN-VERBINDUNGEN ---
     "⛷️ Piste 1 (Gaislachkogl Talfahrt)": (250, 350),
