@@ -74,33 +74,30 @@ ziel = st.sidebar.selectbox("Ziel", sorted(nodes.keys()))
 show_coords = st.sidebar.checkbox("Koordinaten-Helfer anzeigen")
 
 # --- KARTE ---
+# Wir definieren das Rechteck für dein Bild
 map_bounds = [[0, 0], [1000, 1400]]
 
-# Wir übergeben max_bounds direkt hier beim Erstellen der Karte.
-# Das verhindert, dass Python nach der Methode .set_max_bounds suchen muss.
+# Karte erstellen
 m = folium.Map(
-    crs='Simple', 
-    location=[500, 700], 
-    zoom_start=0,           # Wir starten ganz weit weg
-    min_zoom=0,             # Erlaubt volles Herauszoomen bis zum Bildrand
-    max_zoom=4,
-    max_bounds=True,        # Aktiviert die Sperre
-    min_lat=0,              # Untere Grenze
-    max_lat=1000,           # Obere Grenze
-    min_lon=0,              # Linke Grenze
-    max_lon=1400            # Rechte Grenze
+    crs='Simple',
+    location=[500, 700],
+    zoom_start=1,
+    min_zoom=0,         # Erlaubt das Rauszoomen bis zum Bildrand
+    max_zoom=4,         # Erlaubt tiefes Reinzoomen
+    max_bounds=map_bounds # Das hier lockt die Karte auf das Bild ein
 )
 
 # Das Bild einfügen
 folium.raster_layers.ImageOverlay(
     image=f"data:image/jpeg;base64,{img_data}",
     bounds=map_bounds,
-    opacity=1.0
+    opacity=1.0,
+    zindex=1
 ).add_to(m)
 
-# Zwingt die Karte, das Bild perfekt einzurahmen
+# DER ENTSCHEIDENDE BEFEHL: Zwingt die Kamera zum Bild
 m.fit_bounds(map_bounds)
 
-# Helfer-Tool
+# Helfer-Tool (nur wenn in Sidebar aktiviert)
 if show_coords:
     m.add_child(folium.LatLngPopup())
