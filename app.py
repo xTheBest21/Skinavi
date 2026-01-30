@@ -142,22 +142,42 @@ folium.raster_layers.ImageOverlay(
 if show_coords:
     m.add_child(folium.LatLngPopup())
 
-# Route berechnen
+# --- ROUTE BERECHNEN ---
 if st.sidebar.button("Route berechnen"):
     try:
         path = nx.shortest_path(G, source=start, target=ziel)
         path_coords = [nodes[node] for node in path]
         
-        # Linie zeichnen
-        folium.PolyLine(path_coords, color="red", weight=7, opacity=0.8).add_to(m)
+        # 1. Die rote Linie zeichnen
+        folium.PolyLine(path_coords, color="red", weight=8, opacity=0.8).add_to(m)
         
-        # Start & Ziel Marker
-        folium.CircleMarker(path_coords[0], radius=10, color="green", fill=True).add_to(m)
-        folium.CircleMarker(path_coords[-1], radius=10, color="blue", fill=True).add_to(m)
+        # 2. DER HÜPFENDE PFEIL (Dein Standort)
+        folium.map.Marker(
+            path_coords[0],
+            icon=folium.DivIcon(
+                html=f"""<div style="font-size: 30pt; color: green; position: relative; top: -40px; text-align: center;">
+                            <div style="animation: bounce 1s infinite;">⬇️</div>
+                         </div>
+                         <style>
+                            @keyframes bounce {{
+                                0%, 100% {{ transform: translateY(0); }}
+                                50% {{ transform: translateY(-15px); }}
+                            }}
+                         </style>"""
+            )
+        ).add_to(m)
         
-        st.success(f"Weg: {' ➔ '.join(path)}")
-    except:
-        st.error("Keine direkte Skiverbindung gefunden!")
+        # 3. Das Ziel (Ein klassisches Flaggen-Icon)
+        folium.Marker(
+            location=path_coords[-1],
+            icon=folium.Icon(color="red", icon="flag", prefix="fa"),
+            popup=f"ZIEL: {ziel}"
+        ).add_to(m)
+        
+        st.success(f"Route: {' ➔ '.join(path)}")
+        
+    except nx.NetworkXNoPath:
+        st.error("Keine Verbindung gefunden!")
 
 # Anzeige
 st_folium(m, width=1100, height=700)
