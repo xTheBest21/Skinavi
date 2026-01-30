@@ -11,13 +11,13 @@ import base64
 st.set_page_config(page_title="Ski Navi Sölden", layout="wide")
 
 # ANPASSEN: Ersetze 'DEIN_NUTZERNAME' und 'DEIN_REPO' durch deine echten GitHub-Daten
-GITHUB_IMAGE_URL = "https://raw.githubusercontent.com/DEIN_NUTZERNAME/DEIN_REPO/main/soelden_pistenplan.jpg"
+GITHUB_IMAGE_URL = "https://raw.githubusercontent.com/DEIN_NUTZERNAME/DEIN_REPO/main/soelden_pistenplan"
 IMAGE_BOUNDS = [[0, 0], [1000, 1400]]
 
 def load_image_robust():
     # Versuch 1: Lokal laden
     try:
-        img = Image.open("soelden_pistenplan.jpg")
+        img = Image.open("soelden_pistenplan")
         return img
     except:
         # Versuch 2: Von GitHub laden (Fallback)
@@ -31,7 +31,7 @@ def load_image_robust():
 img = load_image_robust()
 
 if img is None:
-    st.error("❌ Das Bild konnte nicht geladen werden. Bitte prüfe, ob 'soelden_pistenplan.jpg' im GitHub-Ordner liegt.")
+    st.error("❌ Das Bild konnte nicht geladen werden. Bitte prüfe, ob 'soelden_pistenplan' im GitHub-Ordner liegt.")
     st.stop()
 
 # Bild für Folium vorbereiten (Base64)
