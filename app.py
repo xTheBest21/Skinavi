@@ -136,19 +136,21 @@ start = st.sidebar.radio("Dein Standort", filter_nodes(kategorie_start))
 ziel = st.sidebar.radio("Wohin willst du?", filter_nodes(kategorie_ziel))
 show_coords = st.sidebar.checkbox("Koordinaten-Helfer (Klick auf Karte)")
 
-# --- KARTEN-LOGIK ---
-# Wichtig: Nutze die Originalmaße deines Bildes
+# --- KARTEN-LOGIK (ZENTRIERT) ---
 img_height, img_width = 3504, 4958
 map_bounds = [[0, 0], [img_height, img_width]]
 
+# Wir setzen die Location exakt auf die Mitte des Bildes
 m = folium.Map(
     crs='Simple',
-    location=[img_height / 2, img_width / 2],
-    zoom_start=-3,
+    location=[img_height / 2, img_width / 2], 
+    zoom_start=-3,        # Start-Zoom
     min_zoom=-5,
     max_zoom=1,
     tiles=None,
-    max_bounds=True
+    max_bounds=True,
+    control_scale=False,
+    prefer_canvas=True
 )
 
 folium.raster_layers.ImageOverlay(
@@ -157,6 +159,7 @@ folium.raster_layers.ImageOverlay(
     zindex=1
 ).add_to(m)
 
+# Das hier zwingt die Karte, das Bild mittig einzupassen
 m.fit_bounds(map_bounds)
 
 # --- Marker & Navigation ---
@@ -194,10 +197,10 @@ if show_coords:
 # --- FINALE ANZEIGE (NUR EINMAL!) ---
 output = st_folium(
     m, 
-    width=None, 
-    height=750,           # Erhöhte Höhe für bessere Sichtbarkeit am Monitor
+    width=None,           # Nutzt die gesamte verfügbare Breite
+    height=800,           # Höhe auf 800 für große Monitore (hier kannst du variieren)
     use_container_width=True, 
-    key="soelden_main_map"
+    key="soelden_centered_map"
 )
 
 # Hilfs-Output für Koordinaten
