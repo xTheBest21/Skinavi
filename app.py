@@ -81,8 +81,8 @@ map_bounds = [[0, 0], [1000, 1400]]
 m = folium.Map(
     crs='Simple',
     location=[500, 700],
-    zoom_start=10,
-    min_zoom=4,
+    zoom_start=0,1,
+    min_zoom=0,1,
     max_zoom=10
 )
 
