@@ -213,7 +213,7 @@ show_coords = st.sidebar.checkbox("Koordinaten-Helfer (für neue Punkte)")
 # --- KARTE INITIALISIEREN ---
 map_bounds = [[0, 0], [1000, 1400]]
 m = folium.Map(crs='Simple', location=[500, 700], zoom_start=-0.5,
-tiles=None
+tiles=None,
 background_color="white")
 # Pistenplan Overlay
 folium.raster_layers.ImageOverlay(
