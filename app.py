@@ -23,8 +23,12 @@ ziel = st.sidebar.selectbox("Ziel:", sorted(pisten_ziele.keys()), key="z_final")
 m = folium.Map(location=[46.95, 11.00], zoom_start=13)
 
 # 5. Bild-Overlay (Dein Pistenplan von GitHub)
-bild_url = "https://raw.githubusercontent.com/xTheBest21/skinavi/main/soelden_pistenplan.jpg"
-folium.ImageOverlay(image=bild_url, bounds=[[46.90, 10.90], [47.00, 11.10]], opacity=1.0).add_to(m)
+bild_url = "https://raw.githubusercontent.com/xTheBest21/Skinavi/main/soelden_pistenplan.jpg"
+folium.ImageOverlay(
+    image=bild_url,
+    bounds=[[46.90, 10.90], [47.00, 11.10]],
+    opacity=1.0
+).add_to(m)
 
 # 6. Marker setzen
 folium.Marker(pisten_ziele[start], popup="START", icon=folium.Icon(color='blue')).add_to(m)
