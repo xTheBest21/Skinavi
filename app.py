@@ -29,7 +29,7 @@ m = folium.Map(
     # Probiere 12 oder 13 aus, bis das Bild den Bildschirm füllt
     min_zoom=12, 
     max_zoom=16,
-    
+)
     # Verhindert das Verschieben aus dem Sichtfeld
     max_bounds=True,
     min_lat=bild_grenzen[0][0],
