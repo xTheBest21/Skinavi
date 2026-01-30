@@ -164,59 +164,38 @@ if start in nodes:
 # --- ROUTE BERECHNEN ---
 if st.sidebar.button("Route berechnen"):
     try:
+        # 1. Pfad berechnen
         path = nx.shortest_path(G, source=start, target=ziel)
         path_coords = [nodes[node] for node in path]
         
-        # 1. Die rote Linie zeichnen
+        # 2. Linie und Marker zur Karte hinzufügen
         folium.PolyLine(path_coords, color="red", weight=8, opacity=0.8).add_to(m)
-        
-        # 2. DER HÜPFENDE PFEIL (Dein Standort)
-        folium.map.Marker(
-            path_coords[0],
-            icon=folium.DivIcon(
-                html=f"""<div style="font-size: 30pt; color: green; position: relative; top: -40px; text-align: center;">
-                            <div style="animation: bounce 1s infinite;">⬇️</div>
-                         </div>
-                         <style>
-                            @keyframes bounce {{
-                                0%, 100% {{ transform: translateY(0); }}
-                                50% {{ transform: translateY(-15px); }}
-                            }}
-                         </style>"""
-            )
-        ).add_to(m)
-        
-        # 3. Das Ziel (Ein klassisches Flaggen-Icon)
         folium.Marker(
             location=path_coords[-1],
             icon=folium.Icon(color="red", icon="flag", prefix="fa"),
             popup=f"ZIEL: {ziel}"
         ).add_to(m)
+
+        # 3. Den Guide unter der Karte vorbereiten (wir nutzen eine Liste für später)
+        st.success(f"Route gefunden: {len(path)-1} Abschnitte")
         
-        st.success(f"Route: {' ➔ '.join(path)}")
-        # --- GUIDE ANZEIGEN ---
-        st.subheader(" Schritt-für-Schritt Guide")
-        
-        # Wir gehen den Pfad Schritt für Schritt durch
+        # --- HIER IST DER GUIDE ---
+        st.subheader("🗺️ Dein Ski-Guide")
         for i in range(len(path) - 1):
-            punkt_a = path[i]
-            punkt_b = path[i+1]
-            
-            # Wir prüfen, ob es ein Lift oder eine Piste ist (anhand der Emojis)
-            if "🚠" in punkt_b or "💺" in punkt_b:
-                anweisung = "Fahre mit dem Lift nach"
-                icon = "🚠"
-            elif "🏠" in punkt_b:
-                anweisung = "Kehre ein bei / Ziel erreicht:"
-                icon = "🍴"
+            p1, p2 = path[i], path[i+1]
+            if "🚠" in p2 or "💺" in p2:
+                st.write(f"**Schritt {i+1}:** Mit {p2} nach oben fahren.")
+            elif "🏠" in p2:
+                st.write(f"**Schritt {i+1}:** Ziel erreicht bei {p2} 🍽️")
             else:
-                anweisung = "Fahre über die Piste nach"
-                icon = "⛷️"
-            
-            # Schicke Karte für jeden Schritt
-            st.info(f"**Schritt {i+1}:** {anweisung} **{punkt_b}**")
+                st.write(f"**Schritt {i+1}:** Über die Piste abfahren nach: **{p2}** ⛷️")
+        
+        st.balloons()
 
-        st.balloons() # Kleiner Effekt bei Ankunft
+    except nx.NetworkXNoPath:
+        st.error("Keine Verbindung gefunden! Bitte prüfe die Pistenverbindungen.")
+    except Exception as e:
+        st.error(f"Fehler: {e}")
 
-# Anzeige
+# --- ENTSCHEIDEND: Diese Zeile muss ganz links stehen! ---
 st_folium(m, width=1100, height=700)
