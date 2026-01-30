@@ -64,23 +64,25 @@ ziel_name = st.sidebar.selectbox("Dein Ziel:", sorted(alle_ziele.keys()))
 my_pos = alle_ziele[start_name]
 ziel_pos = alle_ziele[ziel_name]
 
-# --- 5. Handy-optimierte Karte mit Zoom-Begrenzung ---
+# --- 5. Absolut fixierte Karte (Kein Zoomen über den Rand hinaus) ---
 
-# Wir definieren die Grenzen basierend auf deinem Pistenplan [cite: 1]
+# Wir definieren die Grenzen basierend auf deinem Pistenplan
 bild_grenzen = [[46.920, 10.930], [47.010, 11.060]]
 
-# Initialisierung der Karte mit festen Grenzen
+# Initialisierung der Karte mit CRS.Simple (behandelt die Karte wie ein flaches Bild)
 m = folium.Map(
     location=[46.9655, 11.0088], 
     zoom_start=14, 
-    tiles=None,
-    min_zoom=13,        # Verhindert zu weites Rauszoomen
-    max_zoom=16,        # Verhindert zu tiefes Reinzoomen (Verpixelung)
-    max_bounds=True,    # Aktiviert die Begrenzung
+    tiles=None,           # Keine Weltkarte im Hintergrund
+    crs="Simple",         # WICHTIG: Verhindert das "Wegschweben" der Karte
+    min_zoom=13, 
+    max_zoom=16, 
+    max_bounds=True,
     min_lat=bild_grenzen[0][0],
     max_lat=bild_grenzen[1][0],
     min_lon=bild_grenzen[0][1],
-    max_lon=bild_grenzen[1][1]
+    max_lon=bild_grenzen[1][1],
+    control_scale=False   # Maßstab ausblenden, da er auf Panorama-Bildern nicht stimmt
 )
 
 # Das Bild (Pistenplan) hinzufügen
@@ -92,19 +94,20 @@ folium.raster_layers.ImageOverlay(
     opacity=1.0,
     interactive=True,
     cross_origin=True,
-    zindex=1
+    zindex=1,
+    # Verhindert, dass das Bild beim Zoomen grau wird
+    sticky_bounds=True 
 ).add_to(m)
 
-# Marker für Start und Ziel [cite: 145]
+# Marker für Start und Ziel
 folium.Marker(my_pos, popup=f"START: {start_name}", icon=folium.Icon(color='blue', icon='play')).add_to(m)
 folium.Marker(ziel_pos, popup=f"ZIEL: {ziel_name}", icon=folium.Icon(color='red', icon='flag')).add_to(m)
 
-# Gelbe Linie als Richtungshilfe [cite: 131]
+# Gelbe Linie als Richtungshilfe
 folium.PolyLine([my_pos, ziel_pos], color="yellow", weight=5, opacity=0.8).add_to(m)
 
-# Anzeige in Streamlit
+# Anzeige in Streamlit - use_container_width sorgt für Handy-Optimierung
 st_folium(m, width=None, height=600, use_container_width=True)
-
 # Info-Box
 distanz = berechne_distanz(my_pos, ziel_pos)
 st.info(f"Distanz zwischen {start_name} und {ziel_name}: ca. {distanz:.2f} km")
