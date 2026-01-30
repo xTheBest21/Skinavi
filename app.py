@@ -210,22 +210,45 @@ start = st.sidebar.selectbox("Dein Standort", sorted(nodes.keys()))
 ziel = st.sidebar.selectbox("Wohin willst du?", sorted(nodes.keys()))
 show_coords = st.sidebar.checkbox("Koordinaten-Helfer (für neue Punkte)")
     
-# --- KARTE INITIALISIEREN (Stabilisiert) ---
-# Deine Bildgröße (muss zu den Koordinaten in nodes passen)
+# 1. Wir definieren die Grenzen etwas weiter, damit das Handy nicht "blockiert"
 map_bounds = [[0, 0], [1000, 1400]]
 
+# 2. Die Karte mit mobilem Fokus erstellen
 m = folium.Map(
     crs='Simple', 
     location=[500, 700], 
-    zoom_start=-0.5,
+    zoom_start=0.1,  # Etwas näher starten für Handys
     tiles=None,
-    # Wir setzen die Grenze: Man kann nicht aus dem Bild rausscrollen
+    # Wir erlauben dem User etwas mehr Platz zum Bewegen
     max_bounds=True,
-    min_lat=0,
-    max_lat=1000,
-    min_lon=0,
-    max_lon=1400
+    min_lat=-100, 
+    max_lat=1100,
+    min_lon=-100, 
+    max_lon=1500, # Mehr Platz nach rechts!
+    zoom_control=True
 )
+
+# 3. Das Bild hinzufügen
+folium.raster_layers.ImageOverlay(
+    image=f"data:image/jpeg;base64,{img_data}",
+    bounds=map_bounds,
+    zindex=1,
+    interactive=True # Wichtig für Touch
+).add_to(m)
+
+# 4. Der ultimative CSS-Fix gegen das Schwarzwerden (speziell für Mobile)
+m.get_root().header.add_child(folium.Element("""
+    <style>
+        .folium-map { 
+            background-color: white !important; 
+        }
+        /* Verhindert graue Ränder auf dem iPhone/Android */
+        .leaflet-container {
+            background: #ffffff !important;
+            outline: 0;
+        }
+    </style>
+"""))
 
 # Das Bild fest auf die Karte legen
 folium.raster_layers.ImageOverlay(
@@ -300,7 +323,13 @@ if start != ziel:
         route_guide = ""
 
 # --- ANZEIGE DER KARTE (Nur einmal aufrufen!) ---
-st_folium(m, width=1100, height=700, key="soelden_map_fix")
+st_folium(
+    m, 
+    width=None, # None lässt es die volle Breite des Handys nutzen
+    height=500, # Auf dem Handy ist 500px meist besser als 700px
+    key="soelden_mobile_final",
+    use_container_width=True
+)
 
 # --- ANZEIGE DES GUIDES (Unter der Karte) ---
 if route_guide:
