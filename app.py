@@ -243,8 +243,8 @@ folium.raster_layers.ImageOverlay(
 
 # 1. Definieren der Bildgröße (Pixel deines JPEGs)
 # Wenn dein Bild z.B. 1400x1000 Pixel hat:
-img_height = 1920
-img_width = 1080
+img_height = 3504
+img_width = 4958
 map_bounds = [[0, 0], [img_height, img_width]]
 
 # 2. Die Karte erstellen
