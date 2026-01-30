@@ -35,4 +35,4 @@ def build_soelden_graph():
     ]
     
     for u, v, kind, label in edges:
-        G.add_edge(u, v, kind
+        G.add_edge(u, v, kind)
