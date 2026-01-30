@@ -128,7 +128,7 @@ start = st.sidebar.selectbox("Dein Standort", sorted(nodes.keys()))
 ziel = st.sidebar.selectbox("Wohin willst du?", sorted(nodes.keys()))
 show_coords = st.sidebar.checkbox("Koordinaten-Helfer (für neue Punkte)")
 
-# Karte initialisieren
+# --- KARTE INITIALISIEREN ---
 map_bounds = [[0, 0], [1000, 1400]]
 m = folium.Map(crs='Simple', location=[500, 700], zoom_start=-0.5)
 
@@ -138,6 +138,27 @@ folium.raster_layers.ImageOverlay(
     bounds=map_bounds
 ).add_to(m)
 
+# --- NEU: PFEIL ANZEIGEN (SOFORT BEI AUSWAHL) ---
+if start in nodes:
+    start_coords = nodes[start]
+    folium.map.Marker(
+        start_coords,
+        icon=folium.DivIcon(
+            html=f"""<div style="font-size: 30pt; color: green; position: relative; top: -40px; text-align: center;">
+                        <div style="animation: bounce 1s infinite;">⬇️</div>
+                     </div>
+                     <style>
+                        @keyframes bounce {{
+                            0%, 100% {{ transform: translateY(0); }}
+                            50% {{ transform: translateY(-15px); }}
+                        }}
+                     </style>"""
+        )
+    ).add_to(m)
+
+# --- ROUTE BERECHNEN (Hier bleibt der Rest wie er war) ---
+if st.sidebar.button("Route berechnen"):
+    # ... dein bisheriger Code für die Linie und das Ziel ...
 # Koordinaten-Klick-Helfer
 if show_coords:
     m.add_child(folium.LatLngPopup())
