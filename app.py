@@ -142,8 +142,6 @@ def build_soelden_graph():
         ("⛷️ Piste 13 (Blau)", "🏠 Hühnersteign"),
         ("🏠 Hühnersteign", "🏠 s´Stabele Schirmbar"),
         ("🏠 s´Stabele Schirmbar", "🏠 Gampe Alm"),
-        ("🏠 Gampe Alm", "🏠 Gampe Labe"),
-        ("🏠 Gampe Labe", "🏠 Gampe Thaya"),
         ("🏠 Gampe Thaya", "🏠 Haimbachalm"),
         ("🏠 Haimbachalm", "⛷️ Piste 20 (Rot)"),
         ("⛷️ Piste 13 (Blau)", "⛷️ Piste 19 (Rot)"),
