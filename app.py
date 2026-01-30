@@ -50,23 +50,42 @@ def load_ski_data():
 data = load_ski_data()
 
 # 3. Ziele sammeln
-gefundene_ziele = {}
+# --- 3. Datenbank für Ziele (Hütten & Lifte getrennt markieren) ---
+huetten_liste = {}
+lifte_liste = {}
+
 for element in data.get('elements', []):
     t = element.get('tags', {})
     name = t.get('name')
+    
     if name:
+        # Falls es ein Lift ist (aerialway)
         if 'aerialway' in t and 'geometry' in element:
-            gefundene_ziele[f"🚠 {name}"] = [element['geometry'][0]['lat'], element['geometry'][0]['lon']]
+            anzeige_name = f"🚠 LIFT: {name}"
+            lifte_liste[anzeige_name] = [element['geometry'][0]['lat'], element['geometry'][0]['lon']]
+        
+        # Falls es eine Gastronomie/Hütte ist
         elif (t.get('amenity') in ['restaurant', 'bar', 'cafe'] or t.get('tourism') == 'alpine_hut'):
             if 'lat' in element and 'lon' in element:
-                gefundene_ziele[f"🏠 {name}"] = [element['lat'], element['lon']]
+                anzeige_name = f"🏠 HÜTTE: {name}"
+                huetten_liste[anzeige_name] = [element['lat'], element['lon']]
 
-# 4. Standort-Modus wählen (In der Seitenleiste)
-st.sidebar.header("📍 Standorteinstellungen")
-standort_modus = st.sidebar.radio(
-    "Wie möchtest du deinen Standort bestimmen?", 
-    ["GPS nutzen", "Manuell auswählen"]
-)
+# Alle Ziele in einem Dictionary vereinen
+gefundene_ziele = {**huetten_liste, **lifte_liste}
+
+# --- 4. Standort & Auswahl ---
+# (Dein bisheriger Code für Standort_modus bleibt gleich)
+
+if standort_modus == "Manuell auswählen":
+    # Wir erstellen eine Liste, die erst ALLE Hütten und dann ALLE Lifte zeigt
+    manuelle_auswahl_liste = sorted(huetten_liste.keys()) + sorted(lifte_liste.keys())
+    
+    start_name = st.selectbox(
+        "Wo befindest du dich gerade?", 
+        manuelle_auswahl_liste,
+        help="Hütten sind oben, Lifte sind unten in der Liste."
+    )
+    my_pos = gefundene_ziele[start_name]
 
 my_pos = None
 
