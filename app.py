@@ -138,12 +138,44 @@ if show_coords:
 # Route berechnen
 if st.sidebar.button("Route berechnen"):
     try:
+        # Den Pfad berechnen
         path = nx.shortest_path(G, source=start, target=ziel)
         path_coords = [nodes[node] for node in path]
-        folium.PolyLine(path_coords, color="red", weight=10).add_to(m)
-        st.success(f"Route: {' ➔ '.join(path)}")
+        
+        # 1. Die Route als Linie zeichnen
+        folium.PolyLine(
+            path_coords, 
+            color="red", 
+            weight=10, 
+            opacity=0.8,
+            popup="Deine Route"
+        ).add_to(m)
+        
+        # 2. Start-Punkt markieren (Grün)
+        folium.CircleMarker(
+            path_coords[0], 
+            radius=10, 
+            color="green", 
+            fill=True, 
+            fill_opacity=1,
+            popup=f"START: {start}"
+        ).add_to(m)
+        
+        # 3. Ziel-Punkt markieren (Blau)
+        folium.CircleMarker(
+            path_coords[-1], 
+            radius=10, 
+            color="blue", 
+            fill=True, 
+            fill_opacity=1,
+            popup=f"ZIEL: {ziel}"
+        ).add_to(m)
+        
+        st.success(f"Route gefunden: {' ➔ '.join(path)}")
+        
+    except nx.NetworkXNoPath:
+        st.error("Keine Verbindung gefunden! Du kommst von hier nicht direkt zum Ziel.")
     except Exception as e:
-        st.error("Keine Verbindung gefunden.")
-
+        st.error(f"Ein Fehler ist aufgetreten: {e}")
 # Anzeige in Streamlit
 st_folium(m, width=1000, height=700)
