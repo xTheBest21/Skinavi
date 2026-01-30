@@ -13,6 +13,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 # 2. Daten laden (mit Offline-Speicher-Logik)
+# 2. Daten laden (Erweitert um Hütten/Restaurants)
 @st.cache_data
 def load_ski_data():
     if os.path.exists(DATA_FILE):
@@ -20,9 +21,14 @@ def load_ski_data():
             return json.load(f)
     else:
         overpass_url = "http://overpass-api.de/api/interpreter"
+        # Die Query sucht jetzt nach Pisten UND Hütten/Restaurants
         query = """
         [out:json];
-        way["piste:type"](46.93, 10.95, 47.00, 11.05);
+        (
+          way["piste:type"](46.93, 10.95, 47.00, 11.05);
+          node["amenity"="restaurant"](46.93, 10.95, 47.00, 11.05);
+          node["tourism"="alpine_hut"](46.93, 10.95, 47.00, 11.05);
+        );
         out geom;
         """
         try:
@@ -33,6 +39,28 @@ def load_ski_data():
             return data
         except:
             return {"elements": []}
+
+data = load_ski_data()
+
+# 3. Hütten-Datenbank automatisch aus den OSM-Daten erstellen
+gefundene_huetten = {}
+for element in data.get('elements', []):
+    tags = element.get('tags', {})
+    name = tags.get('name')
+    if name and (tags.get('amenity') == 'restaurant' or tags.get('tourism') == 'alpine_hut'):
+        # Speichere Name und Koordinaten (lat, lon)
+        gefundene_huetten[name] = [element['lat'], element['lon']]
+
+# Falls die Liste leer ist, nehmen wir unsere Standard-Hütten als Backup
+if not gefundene_huetten:
+    gefundene_huetten = {"Gamsstadl": [46.9415, 10.9835], "Sonnblick": [46.9720, 11.0110]}
+
+# Sortiere die Hütten alphabetisch für das Dropdown
+sortierte_huetten = dict(sorted(gefundene_huetten.items()))
+
+# 4. Ziel-Auswahl (Jetzt mit allen gefundenen Hütten!)
+ziel_name = st.selectbox("Wohin möchtest du?", list(sortierte_huetten.keys()))
+ziel_coords = sortierte_huetten[ziel_name]
 
 data = load_ski_data()
 
