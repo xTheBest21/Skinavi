@@ -12,7 +12,6 @@ st.set_page_config(page_title="Ski Navi Sölden", layout="wide")
 
 # Bild-URL
 IMAGE_URL = "https://raw.githubusercontent.com/xTheBest21/Skinavi/main/soelden_pistenplan.jpg"
-IMAGE_BOUNDS = [[0, 0], [1000, 1400]]
 
 @st.cache_resource
 def get_image_base64(url):
@@ -20,7 +19,6 @@ def get_image_base64(url):
         response = requests.get(url, timeout=10)
         if response.status_code == 200:
             img = Image.open(BytesIO(response.content))
-            # Wandelt CMYK/RGBA in RGB um (verhindert Fehler bei JPGs)
             if img.mode != "RGB":
                 img = img.convert("RGB")
             buffered = BytesIO()
@@ -37,7 +35,6 @@ img_data = get_image_base64(IMAGE_URL)
 def build_soelden_graph():
     G = nx.DiGraph()
     
-    # Koordinaten (Y, X)
     nodes = {
         "Gaislachkogl Tal": (130, 360),
         "Gaislachkogl Mittel": (400, 310),
@@ -58,7 +55,6 @@ def build_soelden_graph():
     for name, pos in nodes.items():
         G.add_node(name, pos=pos)
 
-    # 1. LIFTE (Hochfahren)
     lifte = [
         ("Gaislachkogl Tal", "Gaislachkogl Mittel"),
         ("Gaislachkogl Mittel", "Gaislachkogl Gipfel"),
@@ -70,29 +66,27 @@ def build_soelden_graph():
         ("Rettenbachferner", "Schwarze Schneid")
     ]
     
-    # 2. PISTEN (Runterfahren) - HIER KOMMEN SIE HIN
     pisten = [
-        ("Gaislachkogl Gipfel", "Gaislachkogl Mittel"), # Abfahrt oben
-        ("Gaislachkogl Mittel", "Gaislachkogl Tal"),    # Talabfahrt
-        ("Giggijoch Berg", "Langegg"),                 # Verbindungspiste
-        ("Rettenbachferner", "Einzeiger"),              # Vom Gletscher zurück
+        ("Gaislachkogl Gipfel", "Gaislachkogl Mittel"),
+        ("Gaislachkogl Mittel", "Gaislachkogl Tal"),
+        ("Giggijoch Berg", "Langegg"),
+        ("Rettenbachferner", "Einzeiger"),
         ("Schwarze Schneid", "Rettenbachferner"),
-        ("Schwarze Schneid", "Tiefenbachferner")        # Skitunnel
+        ("Schwarze Schneid", "Tiefenbachferner")
     ]
     
-    # Alle Verbindungen in den Graphen laden
     for u, v in lifte + pisten:
         G.add_edge(u, v)
         
     return G, nodes
-# --- UI ---
-# 5. UI INITIALISIEREN
-st.title("⛷️ Ski Navi Sölden")
-start = st.sidebar.selectbox("Start", sorted(nodes.keys()))
-ziel = st.sidebar.selectbox("Ziel", sorted(nodes.keys()))
-show_coords = st.sidebar.checkbox("Koordinaten-Helfer anzeigen")
 
-# Fehlerprüfung
+# --- DATEN LADEN ---
+# Dies muss vor dem UI stehen!
+G, nodes = build_soelden_graph()
+
+# --- UI ---
+st.title("⛷️ Ski Navi Sölden")
+
 if img_data is None or "Fehler" in str(img_data):
     st.error(f"⚠️ Bild konnte nicht geladen werden: {img_data}")
     st.stop()
@@ -103,99 +97,47 @@ ziel = st.sidebar.selectbox("Ziel", sorted(nodes.keys()))
 show_coords = st.sidebar.checkbox("Koordinaten-Helfer anzeigen")
 
 # --- KARTE ---
-# Wir definieren die Bildgröße
 map_bounds = [[0, 0], [1000, 1400]]
 
-# Karte ganz einfach ohne restriktive Parameter erstellen
 m = folium.Map(
     crs='Simple',
     location=[500, 700],
-    zoom_start=0.01,
-    min_zoom=0.01,
+    zoom_start=-0.5,
+    min_zoom=-2,
     max_zoom=5
 )
 
-# Das Bild als Overlay hinzufügen
-img_overlay = folium.raster_layers.ImageOverlay(
+folium.raster_layers.ImageOverlay(
     image=f"data:image/jpeg;base64,{img_data}",
     bounds=map_bounds,
     opacity=1.0,
     interactive=True
 ).add_to(m)
 
-# 1. Zwingt die Kamera zum Bild
-m.fit_bounds(map_bounds)
-
-# 2. DER TRICK: Wir setzen die Grenzen hart per Skript, 
-# nachdem die Karte geladen wurde. Das verhindert das "Verschwinden".
-m.max_bounds = True
 m.options['maxBounds'] = map_bounds
-# 7. ROUTEN-BERECHNUNG (DIESEN CODE HIER EINFÜGEN)
-if st.sidebar.button("Route berechnen"):
-    try:
-        path = nx.shortest_path(G, source=start, target=ziel)
-        path_coords = [nodes[node] for node in path]
-        
-        # Linie zeichnen
-        folium.PolyLine(path_coords, color="red", weight=10, opacity=0.7).add_to(m)
-        
-        # Start-Marker (Grün)
-        folium.CircleMarker(path_coords[0], radius=10, color="green", fill=True).add_to(m)
-        
-        # Ziel-Marker (Blau)
-        folium.CircleMarker(path_coords[-1], radius=10, color="blue", fill=True).add_to(m)
-        
-        st.success(f"Route: {' ➔ '.join(path)}")
-    except:
-        st.error("Keine Verbindung gefunden!")
 
-# 8. KARTE ANZEIGEN (Das ist immer die letzte Zeile)
-st_folium(m, width=1000, height=700)
 # Helfer-Tool
 if show_coords:
     m.add_child(folium.LatLngPopup())
 
-# Route berechnen
+# --- ROUTE BERECHNEN ---
 if st.sidebar.button("Route berechnen"):
     try:
-        # Den Pfad berechnen
         path = nx.shortest_path(G, source=start, target=ziel)
         path_coords = [nodes[node] for node in path]
         
-        # 1. Die Route als Linie zeichnen
-        folium.PolyLine(
-            path_coords, 
-            color="red", 
-            weight=10, 
-            opacity=0.8,
-            popup="Deine Route"
-        ).add_to(m)
+        # Route zeichnen
+        folium.PolyLine(path_coords, color="red", weight=8, opacity=0.8, popup="Deine Route").add_to(m)
         
-        # 2. Start-Punkt markieren (Grün)
-        folium.CircleMarker(
-            path_coords[0], 
-            radius=10, 
-            color="green", 
-            fill=True, 
-            fill_opacity=1,
-            popup=f"START: {start}"
-        ).add_to(m)
+        # Marker
+        folium.CircleMarker(path_coords[0], radius=8, color="green", fill=True, popup=f"START: {start}").add_to(m)
+        folium.CircleMarker(path_coords[-1], radius=8, color="blue", fill=True, popup=f"ZIEL: {ziel}").add_to(m)
         
-        # 3. Ziel-Punkt markieren (Blau)
-        folium.CircleMarker(
-            path_coords[-1], 
-            radius=10, 
-            color="blue", 
-            fill=True, 
-            fill_opacity=1,
-            popup=f"ZIEL: {ziel}"
-        ).add_to(m)
-        
-        st.success(f"Route gefunden: {' ➔ '.join(path)}")
-        
+        st.success(f"Route: {' ➔ '.join(path)}")
     except nx.NetworkXNoPath:
-        st.error("Keine Verbindung gefunden! Du kommst von hier nicht direkt zum Ziel.")
+        st.error("Keine Verbindung gefunden!")
     except Exception as e:
-        st.error(f"Ein Fehler ist aufgetreten: {e}")
-# Anzeige in Streamlit
-st_folium(m, width=1000, height=700)
+        st.error(f"Fehler: {e}")
+
+# --- ANZEIGE ---
+st_folium(m, width=1000, height=700, key="main_map")
