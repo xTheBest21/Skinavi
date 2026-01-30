@@ -222,7 +222,7 @@ map_bounds = [[0, 0], [3504, 4958]]
 m = folium.Map(
     crs='Simple', 
     location=[500, 700], 
-    zoom_start=0.01,  # Etwas näher starten für Handys
+    zoom_start=13,  # Etwas näher starten für Handys
     tiles=None,
     # Wir erlauben dem User etwas mehr Platz zum Bewegen
     max_bounds=True,
@@ -238,7 +238,7 @@ folium.raster_layers.ImageOverlay(
     image=f"data:image/jpeg;base64,{img_data}",
     bounds=map_bounds,
     zindex=1,
-    interactive=False # Wichtig für Touch
+    interactive=True # Wichtig für Touch
 ).add_to(m)
 
 # 1. Definieren der Bildgröße (Pixel deines JPEGs)
