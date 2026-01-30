@@ -32,31 +32,29 @@ def get_image_base64(url):
 
 img_data = get_image_base64(IMAGE_URL)
 
+Das ist eine gute Frage! Die neuen Pisten (Abfahrten) müssen direkt in die Funktion build_soelden_graph() eingebaut werden, und zwar genau unter die Liste der Lifte (edges).
+
+Hier ist der komplette, aktualisierte Teil der Funktion. Du kannst diesen Block einfach über deinen alten build_soelden_graph drüberkopieren:
+
+Python
 # 2. Das Ski-Netzwerk
 @st.cache_resource
 def build_soelden_graph():
     G = nx.DiGraph()
     
-    # Koordinaten (Y, X) - angepasst auf ca. 1000x1400
+    # Koordinaten (Y, X)
     nodes = {
-        # Gaislachkogl Sektor
         "Gaislachkogl Tal": (130, 360),
         "Gaislachkogl Mittel": (400, 310),
         "Gaislachkogl Gipfel": (610, 280),
         "Heidebahn Berg": (450, 420),
         "Wasserkar": (480, 350),
-
-        # Giggijoch Sektor
         "Giggijoch Tal": (70, 750),
         "Giggijoch Berg": (510, 880),
         "Rotkogljoch": (620, 780),
         "Silberbrünnl": (580, 950),
-
-        # Golden Gate (Verbindung)
         "Langegg": (420, 600),
         "Einzeiger": (550, 620),
-
-        # Gletscher Sektor
         "Rettenbachferner": (720, 500),
         "Tiefenbachferner": (750, 250),
         "Schwarze Schneid": (850, 400)
@@ -65,30 +63,30 @@ def build_soelden_graph():
     for name, pos in nodes.items():
         G.add_node(name, pos=pos)
 
-    # Die Verbindungen (Lifte und Pisten)
-    edges = [
-        # Gaislachkogl Lifte
+    # 1. LIFTE (Hochfahren)
+    lifte = [
         ("Gaislachkogl Tal", "Gaislachkogl Mittel"),
         ("Gaislachkogl Mittel", "Gaislachkogl Gipfel"),
-        
-        # Giggijoch Lifte
         ("Giggijoch Tal", "Giggijoch Berg"),
         ("Giggijoch Berg", "Rotkogljoch"),
-        
-        # Verbindung Giggijoch -> Gaislach (und zurück)
-        ("Giggijoch Berg", "Langegg"),
         ("Langegg", "Gaislachkogl Mittel"),
-        
-        # Golden Gate zum Gletscher
         ("Langegg", "Einzeiger"),
         ("Einzeiger", "Rettenbachferner"),
-        
-        # Gletscher-Verbindung
-        ("Rettenbachferner", "Schwarze Schneid"),
-        ("Schwarze Schneid", "Tiefenbachferner")
+        ("Rettenbachferner", "Schwarze Schneid")
     ]
     
-    for u, v in edges:
+    # 2. PISTEN (Runterfahren) - HIER KOMMEN SIE HIN
+    pisten = [
+        ("Gaislachkogl Gipfel", "Gaislachkogl Mittel"), # Abfahrt oben
+        ("Gaislachkogl Mittel", "Gaislachkogl Tal"),    # Talabfahrt
+        ("Giggijoch Berg", "Langegg"),                 # Verbindungspiste
+        ("Rettenbachferner", "Einzeiger"),              # Vom Gletscher zurück
+        ("Schwarze Schneid", "Rettenbachferner"),
+        ("Schwarze Schneid", "Tiefenbachferner")        # Skitunnel
+    ]
+    
+    # Alle Verbindungen in den Graphen laden
+    for u, v in lifte + pisten:
         G.add_edge(u, v)
         
     return G, nodes
