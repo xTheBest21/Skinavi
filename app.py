@@ -14,6 +14,7 @@ st.set_page_config(
 )
 # 2. Daten laden (mit Offline-Speicher-Logik)
 # 2. Daten laden (Erweitert um Hütten/Restaurants)
+# 2. Daten laden (Erweitert um Hütten/Restaurants)
 @st.cache_data
 def load_ski_data():
     if os.path.exists(DATA_FILE):
