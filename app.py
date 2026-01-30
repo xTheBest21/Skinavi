@@ -61,49 +61,78 @@ for element in data.get('elements', []):
             if 'lat' in element and 'lon' in element:
                 gefundene_ziele[f"🏠 {name}"] = [element['lat'], element['lon']]
 
-# 4. Standort-Modus wählen
+# 4. Standort-Modus wählen (In der Seitenleiste)
 st.sidebar.header("📍 Standorteinstellungen")
-standort_modus = st.sidebar.radio("Wie möchtest du deinen Standort bestimmen?", 
-                                 ["GPS nutzen", "Manuell auswählen"])
+standort_modus = st.sidebar.radio(
+    "Wie möchtest du deinen Standort bestimmen?", 
+    ["GPS nutzen", "Manuell auswählen"]
+)
 
 my_pos = None
 
 if standort_modus == "GPS nutzen":
     location = streamlit_js_eval(
         js_expressions="navigator.geolocation.getCurrentPosition(pos => {return {lat: pos.coords.latitude, lon: pos.coords.longitude}})", 
-        key="gps_tracker_manual_toggle"
+        key="gps_tracker_v6_final"
     )
     if location:
         my_pos = [location['lat'], location['lon']]
     else:
-        st.info("Warte auf GPS... Du kannst in der Seitenleiste auf 'Manuell' umschalten.")
+        st.info("Warte auf GPS-Signal... Du kannst in der Seitenleiste links auf 'Manuell auswählen' umschalten.")
 else:
-    # Manuelle Auswahl aus allen bekannten Zielen (Hütten/Lifte)
-    start_name = st.selectbox("Wo befindest du dich gerade?", sorted(gefundene_ziele.keys()))
+    # MANUELLE EINGABE: Hier sind jetzt alle Hütten UND Lifte drin!
+    # Wir sortieren die Liste alphabetisch für eine bessere Übersicht
+    alle_startpunkte = sorted(gefundene_ziele.keys())
+    start_name = st.selectbox(
+        "Wo befindest du dich gerade? (Hütte oder Lift wählen)", 
+        alle_startpunkte,
+        help="Tippe einfach den Namen des Lifts oder der Hütte ein."
+    )
     my_pos = gefundene_ziele[start_name]
+    st.success(f"Startpunkt gesetzt auf: {start_name}")
 
-# 5. Ziel-Auswahl und Sortierung
+# 5. Ziel-Auswahl und Sortierung (Basiert auf manuellem oder GPS-Punkt)
 if my_pos:
-    # Liste nach Entfernung zum (GPS oder manuellen) Standort sortieren
+    # Alle potenziellen Ziele nach Entfernung zum gewählten Startpunkt sortieren
     sortierte_liste = sorted(gefundene_ziele.items(), key=lambda x: berechne_distanz(my_pos, x[1]))
-    ziel_namen = [f"{n} ({berechne_distanz(my_pos, c):.1f} km)" for n, c in sortierte_liste]
     
-    auswahl_komplett = st.selectbox("Wohin soll es gehen?", ziel_namen)
+    # Die Liste für das Dropdown-Menü aufbereiten
+    ziel_auswahl_namen = [f"{n} ({berechne_distanz(my_pos, c):.1f} km)" for n, c in sortierte_liste]
+    
+    st.markdown("### 🎯 Dein Ziel")
+    auswahl_komplett = st.selectbox("Wohin soll es gehen?", ziel_auswahl_namen)
+    
+    # Namen für die Anzeige und Karte säubern
     reiner_name = auswahl_komplett.split(" (")[0]
     ziel_coords = gefundene_ziele[reiner_name]
 
     # --- KARTE ---
-    m = folium.Map(location=my_pos, zoom_start=14)
-    folium.Marker(my_pos, popup="DEIN STANDORT", icon=folium.Icon(color='blue', icon='person', prefix='fa')).add_to(m)
-    folium.Marker(ziel_coords, popup=reiner_name, icon=folium.Icon(color='red', icon='home')).add_to(m)
-    folium.PolyLine([my_pos, ziel_coords], color="green", weight=4, dash_array='5, 5').add_to(m)
+    m = folium.Map(location=my_pos, zoom_start=15) # Etwas näher ranzoomen
+    
+    # Startmarker (Blau)
+    folium.Marker(
+        my_pos, 
+        popup="DEIN STANDORT", 
+        icon=folium.Icon(color='blue', icon='person', prefix='fa')
+    ).add_to(m)
+    
+    # Zielmarker (Rot)
+    folium.Marker(
+        ziel_coords, 
+        popup=reiner_name, 
+        icon=folium.Icon(color='red', icon='home')
+    ).add_to(m)
+    
+    # Verbindungslinie
+    folium.PolyLine([my_pos, ziel_coords], color="green", weight=5, opacity=0.8, dash_array='10, 10').add_to(m)
+    
     st_folium(m, width="100%", height=500)
 
     # --- ETAPPEN PLAN ---
     st.markdown("---")
-    st.subheader(f"📋 Plan von {standort_modus} nach {reiner_name}")
-    st.checkbox("🚠 Erste Bahn/Lift nehmen")
-    st.checkbox("⛷️ Piste befahren")
+    st.subheader(f"📋 Plan von {standort_modus if standort_modus == 'GPS' else 'deinem Standort'} nach {reiner_name}")
+    st.checkbox(f"📍 Start bei {start_name if standort_modus == 'Manuell auswählen' else 'aktuellem GPS'}")
+    st.checkbox("⛷️ Piste befahren / Lift nutzen")
     st.checkbox(f"🥘 Ziel erreicht: {reiner_name}")
 else:
     # Fallback-Ansicht wenn gar nichts gewählt ist
