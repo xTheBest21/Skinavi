@@ -118,65 +118,60 @@ def build_soelden_graph():
   # ERWEITERTE VERBINDUNGEN (LIFTE & PISTEN)
     # ERWEITERTE VERBINDUNGEN (Die Pisten-Logik)
     edges = [
-        # --- SEKTOR GAISLACHKOGL (Abfahrten) ---
+        # --- SEKTOR GAISLACHKOGL ---
         ("🚠 Gaislachkogl II (Gipfel)", "🏠 ice Q"),
-        ("🚠 Gaislachkogl II (Gipfel)", "⛷️ Piste 2 (Rot)"),
-        ("⛷️ Piste 2 (Rot)", "🚠 Gaislachkogl I (Mittel)"),
+        ("🏠 ice Q", "⛷️ Piste 2 (Rot)"),
         ("🚠 Gaislachkogl I (Mittel)", "🏠 Falcon Restaurant"),
-        ("🚠 Gaislachkogl I (Mittel)", "⛷️ Piste 5 (Rot)"),
-        ("⛷️ Piste 5 (Rot)", "💺 Wasserkar"),
-        ("💺 Wasserkar", "🚠 Gaislachkogl I (Mittel)"),
+        ("🏠 Falcon Restaurant", "⛷️ Piste 5 (Rot)"),
+        ("🚠 Gaislachkogl I (Mittel)", "🏠 Mittelstation-Wirt"),
+        ("🏠 Mittelstation-Wirt", "⛷️ Piste 1 (Blau)"),
         ("🚠 Gaislachkogl I (Mittel)", "🏠 Annemaries Hütte"),
         ("🏠 Annemaries Hütte", "🏠 Bubis Schihütte"),
-        ("🏠 Bubis Schihütte", "🏠 Gaislachalm"),
+        ("🏠 Bubis Schihütte", "⛷️ Piste 1 (Blau)"),
+        ("⛷️ Piste 1 (Blau)", "🏠 Silbertaler Alm"),
+        ("🏠 Silbertaler Alm", "🚠 Gaislachkogl I (Tal)"),
+        ("💺 Stabele", "🏠 Gaislachalm"),
         ("🏠 Gaislachalm", "🏠 Löple Alm"),
         ("🏠 Löple Alm", "⛷️ Piste 1 (Blau)"),
-        ("⛷️ Piste 1 (Blau)", "🚠 Gaislachkogl I (Tal)"),
-        ("💺 Heidebahn", "⛷️ Piste 4 (Blau)"),
-        ("⛷️ Piste 4 (Blau)", "🏠 Heidealm"),
+        ("💺 Heidebahn", "🏠 Heidealm"),
+        ("🏠 Heidealm", "⛷️ Piste 4 (Blau)"),
 
-        # --- SEKTOR GIGGIJOCH (Das Herzstück) ---
+        # --- SEKTOR GIGGIJOCH / HOCHSÖLDEN ---
         ("🚠 Giggijochbahn (Berg)", "🏠 Wirtshaus Giggijoch"),
-        ("🚠 Giggijochbahn (Berg)", "⛷️ Piste 13 (Blau)"),
-        ("🚠 Giggijochbahn (Berg)", "⛷️ Piste 14 (Blau)"),
-        ("💺 Silberbrünnl", "⛷️ Piste 15 (Blau)"),
-        ("⛷️ Piste 15 (Blau)", "🚠 Giggijochbahn (Berg)"),
-        ("💺 Rosskirpl", "⛷️ Piste 8 (Schwarz)"),
-        ("⛷️ Piste 8 (Schwarz)", "🚠 Giggijochbahn (Berg)"),
+        ("🏠 Wirtshaus Giggijoch", "⛷️ Piste 13 (Blau)"),
         ("⛷️ Piste 13 (Blau)", "🏠 Hühnersteign"),
         ("🏠 Hühnersteign", "🏠 s´Stabele Schirmbar"),
         ("🏠 s´Stabele Schirmbar", "🏠 Gampe Alm"),
-        ("🏠 Gampe Alm", "🏠 Gampe Thaya"),
-        ("🏠 Gampe Thaya", "⛷️ Piste 20 (Rot)"),
-        ("⛷️ Piste 20 (Rot)", "🚠 Giggijochbahn (Tal)"),
+        ("🏠 Gampe Alm", "🏠 Gampe Labe"),
+        ("🏠 Gampe Labe", "🏠 Gampe Thaya"),
+        ("🏠 Gampe Thaya", "🏠 Haimbachalm"),
+        ("🏠 Haimbachalm", "⛷️ Piste 20 (Rot)"),
         ("⛷️ Piste 13 (Blau)", "⛷️ Piste 19 (Rot)"),
-        ("⛷️ Piste 19 (Rot)", "🏠 Hochsölden (Ort)"),
+        ("⛷️ Piste 19 (Rot)", "🏠 Eugen's Obstlerhütte"),
+        ("🏠 Eugen's Obstlerhütte", "🏠 Hochsölden (Ort)"),
         ("🏠 Hochsölden (Ort)", "🏠 Sonnblick"),
-        
-        # --- VERBINDUNGEN & GOLDEN GATE ---
-        ("🚠 Giggijochbahn (Berg)", "⛷️ Piste 11 (Blau)"),
-        ("⛷️ Piste 11 (Blau)", "💺 Langegg (Zubringer)"),
-        ("💺 Langegg (Zubringer)", "🚠 Gaislachkogl I (Mittel)"),
-        ("💺 Rotkogl", "⛷️ Piste 30 (Blau)"),
-        ("⛷️ Piste 30 (Blau)", "🚠 Gletscherexpress"),
+        ("🏠 Sonnblick", "⛷️ Piste 20 (Rot)"),
+        ("💺 Silberbrünnl", "🏠 Bratkartoffel-Hütte"),
+        ("🏠 Bratkartoffel-Hütte", "🚠 Giggijochbahn (Berg)"),
 
-        # --- GLETSCHER (Ewiges Eis) ---
+        # --- SEKTOR GOLDEN GATE & GLETSCHER ---
+        ("💺 Rotkogl", "🏠 Rotkogljochhütte"),
+        ("🏠 Rotkogljochhütte", "⛷️ Piste 30 (Blau)"),
+        ("⛷️ Piste 11 (Blau)", "🏠 Schwarzkoglhuette"),
+        ("🏠 Schwarzkoglhuette", "💺 Langegg (Zubringer)"),
+        ("⛷️ Piste 30 (Blau)", "🏠 Rettenbachalm"),
+        ("🏠 Rettenbachalm", "🚠 Gletscherexpress"),
         ("🚠 Gletscherexpress", "🏠 Rettenbach Market"),
-        ("🏠 Rettenbach Market", "🚠 Schwarze Schneid I"),
-        ("🚠 Schwarze Schneid I", "🚠 Schwarze Schneid II"),
-        ("🚠 Schwarze Schneid II", "⛷️ Piste 32 (Blau)"),
-        ("⛷️ Piste 32 (Blau)", "⛷️ Piste 33 (Schwarz)"),
-        ("⛷️ Piste 33 (Schwarz)", "🏠 Rettenbach Market"),
-        ("🚠 Schwarze Schneid II", "⛷️ Piste 37 (Blau)"),
-        ("⛷️ Piste 37 (Blau)", "🚠 Tiefenbachbahn"),
-        ("🚠 Tiefenbachbahn", "⛷️ Piste 38 (Blau)"),
-        ("⛷️ Piste 38 (Blau)", "🏠 Gletschertisch"),
+        ("🏠 Rettenbach Market", "⛷️ Piste 32 (Blau)"),
+        ("⛷️ Piste 32 (Blau)", "🏠 Gletschertisch"),
+        ("🚠 Tiefenbachbahn", "🏠 Panorama Restaurant Tiefenbach"),
+        ("🏠 Panorama Restaurant Tiefenbach", "⛷️ Piste 38 (Blau)"),
 
-        # --- LIFT-AUFFAHRTEN (Richtung Berg) ---
+        # --- ZUSÄTZLICHE LIFT-VERBINDUNGEN ---
         ("🚠 Gaislachkogl I (Tal)", "🚠 Gaislachkogl I (Mittel)"),
         ("🚠 Gaislachkogl I (Mittel)", "🚠 Gaislachkogl II (Gipfel)"),
         ("🚠 Giggijochbahn (Tal)", "🚠 Giggijochbahn (Berg)"),
-        ("💺 Stabele", "🚠 Gaislachkogl I (Mittel)"),
+        ("💺 Langegg (Zubringer)", "🚠 Gaislachkogl I (Mittel)"),
         ("💺 Einzeiger", "🚠 Gletscherexpress")
     ]
     
