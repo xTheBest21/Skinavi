@@ -7,11 +7,11 @@ import json
 import os
 import math
 
-# 1. Setup
+# 1. Konfiguration (Titel & Icon wie im Plan)
 st.set_page_config(page_title="SkiNavi Sölden", page_icon="⛷️", layout="wide")
-st.title("⛷️ Sölden: Pisten-Navigator")
+st.title("⛷️ Sölden: Digitaler Pistenplan")
 
-DATA_FILE = "soelden_master_v9.json"
+DATA_FILE = "soelden_master.json"
 
 def berechne_distanz(pos1, pos2):
     lat1, lon1 = pos1
@@ -42,19 +42,22 @@ def load_ski_data():
 
 data = load_ski_data()
 
-# 3. Kategorisierung
+# 3. Pistenfarben nach deiner Legende definieren [cite: 125, 131]
+pisten_farben = {
+    "easy": "#0055ff",       # Blau (leicht) [cite: 126]
+    "intermediate": "#ff0000", # Rot (mittel) [cite: 127]
+    "advanced": "#000000",   # Schwarz (schwer) [cite: 128]
+    "expert": "#000000",
+    "skiroute": "#ffaa00"    # Gelb/Orange (Skiroute) [cite: 131]
+}
+
 huetten_dict = {}
 lifte_dict = {}
-pisten_info = [] # Speichert Pisten für die Analyse
-pisten_farben = {"easy": "blue", "intermediate": "red", "advanced": "black", "expert": "black"}
 
 for element in data.get('elements', []):
     t = element.get('tags', {})
-    name = t.get('name', 'Piste')
-    if 'piste:type' in t and 'geometry' in element:
-        diff = t.get('piste:difficulty', 'unknown')
-        pisten_info.append({"name": name, "coords": element['geometry'], "diff": diff})
-    elif name:
+    name = t.get('name')
+    if name:
         if 'aerialway' in t and 'geometry' in element:
             lifte_dict[f"🚠 LIFT: {name}"] = [element['geometry'][0]['lat'], element['geometry'][0]['lon']]
         elif (t.get('amenity') in ['restaurant', 'bar', 'cafe'] or t.get('tourism') == 'alpine_hut'):
@@ -63,100 +66,49 @@ for element in data.get('elements', []):
 
 alle_ziele = {**huetten_dict, **lifte_dict}
 
-# 4. Sidebar & Standort
-st.sidebar.header("📍 Einstellungen")
-modus = st.sidebar.radio("Standort-Quelle:", ["Manuell auswählen", "GPS nutzen"], key="nav_mode")
+# 4. Standort & Sidebar
+st.sidebar.header("📍 Navigation")
+modus = st.sidebar.radio("Modus:", ["Manuell", "GPS"], key="nav_mode")
 
 my_pos = None
-if modus == "GPS nutzen":
-    gps = streamlit_js_eval(js_expressions="navigator.geolocation.getCurrentPosition(pos => {return {lat: pos.coords.latitude, lon: pos.coords.longitude}})", key="gps_v9")
+if modus == "GPS":
+    gps = streamlit_js_eval(js_expressions="navigator.geolocation.getCurrentPosition(pos => {return {lat: pos.coords.latitude, lon: pos.coords.longitude}})", key="gps_final")
     if gps: my_pos = [gps['lat'], gps['lon']]
     else: st.info("Suche GPS...")
 else:
     start_opt = sorted(huetten_dict.keys()) + sorted(lifte_dict.keys())
-    start_name = st.selectbox("Startpunkt:", start_opt, key="start_box")
+    start_name = st.selectbox("Mein Standort:", start_opt)
     my_pos = alle_ziele[start_name]
 
-# 5. Routing-Analyse & Karte
+# 5. Karte im "Sölden-Look"
 if my_pos:
     sortiert = sorted(alle_ziele.items(), key=lambda x: berechne_distanz(my_pos, x[1]))
-    auswahl_ziel = st.selectbox("Ziel:", [f"{n} ({berechne_distanz(my_pos, c):.1f} km)" for n, c in sortiert])
-    reiner_ziel_name = auswahl_ziel.split(" (")[0]
-    ziel_coords = alle_ziele[reiner_ziel_name]
+    auswahl_ziel = st.selectbox("Ziel wählen:", [f"{n} ({berechne_distanz(my_pos, c):.1f} km)" for n, c in sortiert])
+    reiner_name = auswahl_ziel.split(" (")[0]
+    ziel_coords = alle_ziele[reiner_name]
 
-    m = folium.Map(location=my_pos, zoom_start=15)
+    # Karten-Hintergrund
+    m = folium.Map(location=my_pos, zoom_start=14, tiles="OpenStreetMap")
+
+    # Pisten zeichnen (Dicker & Kräftiger)
+    for element in data.get('elements', []):
+        if 'geometry' in element and 'piste:type' in element.get('tags', {}):
+            pts = [(p['lat'], p['lon']) for p in element['geometry']]
+            diff = element.get('tags', {}).get('piste:difficulty', 'unknown')
+            folium.PolyLine(pts, color=pisten_farben.get(diff, "gray"), weight=5, opacity=0.85).add_to(m)
+
+    # Lifte zeichnen (Schwarz/Grau gestrichelt)
+    for element in data.get('elements', []):
+        if 'aerialway' in element.get('tags', {}):
+            pts = [(p['lat'], p['lon']) for p in element['geometry']]
+            folium.PolyLine(pts, color="#333333", weight=2, dash_array='5, 5').add_to(m)
+
+    # Marker
+    folium.Marker(my_pos, popup="START", icon=folium.Icon(color='blue', icon='user', prefix='fa')).add_to(m)
+    farbe_z = 'orange' if 'LIFT' in reiner_name else 'red'
+    folium.Marker(ziel_coords, popup=reiner_name, icon=folium.Icon(color=farbe_z, icon='flag')).add_to(m)
     
-    # Pisten einzeichnen
-    pisten_auf_dem_weg = set()
-    for p in pisten_info:
-        pts = [(pt['lat'], pt['lon']) for pt in p['coords']]
-        color = pisten_farben.get(p['diff'], "gray")
-        folium.PolyLine(pts, color=color, weight=3, opacity=0.7, tooltip=p['name']).add_to(m)
-        
-        # Check ob Piste grob in der Nähe der Luftlinie liegt
-        p_mid = pts[len(pts)//2]
-        if berechne_distanz(my_pos, p_mid) < 1.0: # Pisten im 1km Umkreis
-            pisten_auf_dem_weg.add(p['diff'])
-
-    folium.Marker(my_pos, popup="START", icon=folium.Icon(color='blue')).add_to(m)
-    folium.Marker(ziel_coords, popup="ZIEL", icon=folium.Icon(color='red')).add_to(m)
-    folium.PolyLine([my_pos, ziel_coords], color="green", weight=2, dash_array='5, 5').add_to(m)
+    st_folium(m, width="100%", height=600)
     
-    st_folium(m, width="100%", height=500)
-
-    # 6. Pisten-Anweisung (DEINE LOGIK)
-    st.subheader("🚠 Wegbeschreibung")
-    st.write(f"Die grüne Linie zeigt die Richtung. Nutze folgende Pisten:")
-    
-    if "easy" in pisten_auf_dem_weg:
-        st.success("🔵 Blaue Pisten (leicht) sind in deiner Nähe verfügbar.")
-    if "intermediate" in pisten_auf_dem_weg:
-        st.warning("🔴 Achtung: Du musst rote Pisten (mittelschwer) nutzen.")
-    if "advanced" in pisten_auf_dem_weg:
-        st.error("⚫ Warnung: Schwarze Pisten (schwer) liegen auf dem Weg!")
-    
-    st.info("💡 **Tipp:** Orientiere dich an den farbigen Linien auf der Karte, die in Richtung der grünen Markierung verlaufen.")
-# ... (Deine Importe und load_ski_data bleiben gleich) ...
-
-# 5. Die Karte im "Sölden-Style" bauen
-# Wir nutzen ein Terrain-Design, um die Berge (BIG 3) hervorzuheben
-m = folium.Map(
-    location=[46.9655, 11.0088], 
-    zoom_start=13, 
-    tiles="OpenStreetMap", # Du kannst auch "Stamen Terrain" versuchen, falls verfügbar
-    attr="Pistenplan Sölden Style"
-)
-
-# Farbschema exakt nach Sölden-Legende (PDF Seite 1)
-pisten_farben = {
-    "easy": "#0055ff",       # Kräftiges Blau (Leicht)
-    "intermediate": "#ff0000", # Signalrot (Mittel)
-    "advanced": "#000000",   # Tiefschwarz (Schwer)
-    "expert": "#000000",
-    "skiroute": "#ffaa00"    # Orange/Gelb für Routen
-}
-
-# Pisten zeichnen mit dicken Linien wie im Plan
-for element in data.get('elements', []):
-    if 'geometry' in element and 'piste:type' in element.get('tags', {}):
-        pts = [(p['lat'], p['lon']) for p in element['geometry']]
-        tags = element.get('tags', {})
-        diff = tags.get('piste:difficulty', 'unknown')
-        
-        # Linienstärke erhöhen für "Plan-Optik"
-        color = pisten_farben.get(diff, "gray")
-        folium.PolyLine(
-            pts, 
-            color=color, 
-            weight=4, 
-            opacity=0.8,
-            tooltip=f"Piste: {tags.get('name', 'unbekannt')}"
-        ).add_to(m)
-
-# Lifte einzeichnen (als graue/schwarze Doppellinien wie im Plan)
-for element in data.get('elements', []):
-    if 'aerialway' in element.get('tags', {}):
-        pts = [(p['lat'], p['lon']) for p in element['geometry']]
-        folium.PolyLine(pts, color="#555555", weight=2, dash_array='5, 5').add_to(m)
-
-# ... (Restlicher Standort-Code) ...
+    # Notrufnummer aus dem Plan [cite: 149]
+    st.error("🆘 **Pistenrettung Sölden:** [+43 5254 508](tel:+435254508)")
