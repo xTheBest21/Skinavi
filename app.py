@@ -36,8 +36,9 @@ img_data = get_image_base64(IMAGE_URL)
 @st.cache_resource
 def build_soelden_graph():
     G = nx.DiGraph()
-    # Deine Stationen
-nodes = {
+    
+    # Koordinaten (Y, X) - angepasst auf ca. 1000x1400
+    nodes = {
         # Gaislachkogl Sektor
         "Gaislachkogl Tal": (130, 360),
         "Gaislachkogl Mittel": (400, 310),
@@ -63,8 +64,9 @@ nodes = {
     
     for name, pos in nodes.items():
         G.add_node(name, pos=pos)
-        # Die Verbindungen (Lifte und Pisten)
-   edges = [
+
+    # Die Verbindungen (Lifte und Pisten)
+    edges = [
         # Gaislachkogl Lifte
         ("Gaislachkogl Tal", "Gaislachkogl Mittel"),
         ("Gaislachkogl Mittel", "Gaislachkogl Gipfel"),
@@ -85,12 +87,11 @@ nodes = {
         ("Rettenbachferner", "Schwarze Schneid"),
         ("Schwarze Schneid", "Tiefenbachferner")
     ]
+    
     for u, v in edges:
         G.add_edge(u, v)
+        
     return G, nodes
-
-G, nodes = build_soelden_graph()
-
 # --- UI ---
 st.title("⛷️ Ski Navi Sölden")
 
