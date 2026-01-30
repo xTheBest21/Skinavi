@@ -61,39 +61,53 @@ for element in data.get('elements', []):
             if 'lat' in element and 'lon' in element:
                 gefundene_ziele[f"🏠 {name}"] = [element['lat'], element['lon']]
 
-# 4. Standort & Auswahl
-location = streamlit_js_eval(
-    js_expressions="navigator.geolocation.getCurrentPosition(pos => {return {lat: pos.coords.latitude, lon: pos.coords.longitude}})", 
-    key="gps_tracker_vFINAL"
-)
+# 4. Standort-Modus wählen
+st.sidebar.header("📍 Standorteinstellungen")
+standort_modus = st.sidebar.radio("Wie möchtest du deinen Standort bestimmen?", 
+                                 ["GPS nutzen", "Manuell auswählen"])
 
-if location:
-    my_pos = [location['lat'], location['lon']]
-    
-    # Sortieren nach Entfernung
+my_pos = None
+
+if standort_modus == "GPS nutzen":
+    location = streamlit_js_eval(
+        js_expressions="navigator.geolocation.getCurrentPosition(pos => {return {lat: pos.coords.latitude, lon: pos.coords.longitude}})", 
+        key="gps_tracker_manual_toggle"
+    )
+    if location:
+        my_pos = [location['lat'], location['lon']]
+    else:
+        st.info("Warte auf GPS... Du kannst in der Seitenleiste auf 'Manuell' umschalten.")
+else:
+    # Manuelle Auswahl aus allen bekannten Zielen (Hütten/Lifte)
+    start_name = st.selectbox("Wo befindest du dich gerade?", sorted(gefundene_ziele.keys()))
+    my_pos = gefundene_ziele[start_name]
+
+# 5. Ziel-Auswahl und Sortierung
+if my_pos:
+    # Liste nach Entfernung zum (GPS oder manuellen) Standort sortieren
     sortierte_liste = sorted(gefundene_ziele.items(), key=lambda x: berechne_distanz(my_pos, x[1]))
-    ziel_auswahl_namen = [f"{n} ({berechne_distanz(my_pos, c):.1f} km)" for n, c in sortierte_liste]
+    ziel_namen = [f"{n} ({berechne_distanz(my_pos, c):.1f} km)" for n, c in sortierte_liste]
     
-    auswahl_komplett = st.selectbox("Wohin soll es gehen?", ziel_auswahl_namen)
+    auswahl_komplett = st.selectbox("Wohin soll es gehen?", ziel_namen)
     reiner_name = auswahl_komplett.split(" (")[0]
     ziel_coords = gefundene_ziele[reiner_name]
 
     # --- KARTE ---
     m = folium.Map(location=my_pos, zoom_start=14)
-    folium.Marker(my_pos, popup="DU", icon=folium.Icon(color='blue')).add_to(m)
-    folium.Marker(ziel_coords, popup=reiner_name, icon=folium.Icon(color='red')).add_to(m)
+    folium.Marker(my_pos, popup="DEIN STANDORT", icon=folium.Icon(color='blue', icon='person', prefix='fa')).add_to(m)
+    folium.Marker(ziel_coords, popup=reiner_name, icon=folium.Icon(color='red', icon='home')).add_to(m)
     folium.PolyLine([my_pos, ziel_coords], color="green", weight=4, dash_array='5, 5').add_to(m)
     st_folium(m, width="100%", height=500)
 
     # --- ETAPPEN PLAN ---
     st.markdown("---")
-    st.subheader("📋 Dein Etappen-Plan")
-    etappen = ["🚠 Erste Bahn nehmen", "⛷️ Abfahrt über Piste", f"🥘 Ziel erreicht: {reiner_name}"]
-    for e in etappen:
-        st.checkbox(e, key=f"check_{e}")
+    st.subheader(f"📋 Plan von {standort_modus} nach {reiner_name}")
+    st.checkbox("🚠 Erste Bahn/Lift nehmen")
+    st.checkbox("⛷️ Piste befahren")
+    st.checkbox(f"🥘 Ziel erreicht: {reiner_name}")
 else:
-    st.info("Suche Standort... Bitte GPS am Handy erlauben.")
-    # Fallback Karte von Sölden
+    # Fallback-Ansicht wenn gar nichts gewählt ist
+    st.warning("Bitte wähle einen Standort manuell oder erlaube GPS.")
     m_fallback = folium.Map(location=[46.9655, 11.0088], zoom_start=13)
     st_folium(m_fallback, width="100%", height=400)
 
