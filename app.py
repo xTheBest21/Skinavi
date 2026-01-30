@@ -35,7 +35,7 @@ def build_soelden_graph():
     G = nx.DiGraph()
     
     # KNOTEN: Name : (Y, X)
-  nodes = {
+    nodes = {
         # --- SEKTOR GAISLACHKOGL ---
         "🚠 Gaislachkogl I (Tal)": (130, 360),
         "🚠 Gaislachkogl I (Mittel)": (400, 310),
