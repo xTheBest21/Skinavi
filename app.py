@@ -6,12 +6,12 @@ import requests
 import json
 import os
 
-# 1. Seite einrichten
-st.set_page_config(page_title="SkiNavi Sölden", layout="wide")
-st.title("⛷️ Sölden Real-Pisten-Navi")
-
-DATA_FILE = "soelden_pisten.json"
-
+st.set_page_config(
+    page_title="SkiNavi Sölden",
+    page_icon="⛷️", # Dies wird dein Browser-Tab Icon
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
 # 2. Daten laden (mit Offline-Speicher-Logik)
 @st.cache_data
 def load_ski_data():
