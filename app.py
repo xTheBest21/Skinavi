@@ -81,9 +81,9 @@ map_bounds = [[0, 0], [1000, 1400]]
 m = folium.Map(
     crs='Simple',
     location=[500, 700],
-    zoom_start=0.5,
+    zoom_start=2,
     min_zoom=0.5,
-    max_zoom=4
+    max_zoom=5
 )
 
 # Das Bild als Overlay hinzufügen
