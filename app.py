@@ -62,7 +62,7 @@ def build_soelden_graph():
         "💺 Giggijoch Sessel": (520, 850),
         "🏠 Wirtshaus Giggijoch": (515, 895),
         "🏠 Gampe Thaya": (385, 892),
-        "🏠 Gampe Lamm": (390, 740),
+        "🏠 Gampe Alm": (366.0625, 912.5000),
         "🏠 Hühnersteign": (450, 820),
         "🏠 Hochsölden (Ort)": (350, 850),
         "🏠 Sonnblick": (340, 840),
