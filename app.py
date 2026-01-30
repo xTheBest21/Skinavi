@@ -37,22 +37,53 @@ img_data = get_image_base64(IMAGE_URL)
 def build_soelden_graph():
     G = nx.DiGraph()
     # Deine Stationen
-    nodes = {
+nodes = {
+        # Gaislachkogl Sektor
         "Gaislachkogl Tal": (130, 360),
-        "Gaislachkogl Mittelstation": (400, 310),
+        "Gaislachkogl Mittel": (400, 310),
         "Gaislachkogl Gipfel": (610, 280),
+        "Heidebahn Berg": (450, 420),
+        "Wasserkar": (480, 350),
+
+        # Giggijoch Sektor
         "Giggijoch Tal": (70, 750),
         "Giggijoch Berg": (510, 880),
-        "Rettenbachgletscher": (700, 480)
+        "Rotkogljoch": (620, 780),
+        "Silberbrünnl": (580, 950),
+
+        # Golden Gate (Verbindung)
+        "Langegg": (420, 600),
+        "Einzeiger": (550, 620),
+
+        # Gletscher Sektor
+        "Rettenbachferner": (720, 500),
+        "Tiefenbachferner": (750, 250),
+        "Schwarze Schneid": (850, 400)
     }
+    
     for name, pos in nodes.items():
         G.add_node(name, pos=pos)
-
     # Verbindungen
-    edges = [
-        ("Gaislachkogl Tal", "Gaislachkogl Mittelstation"),
-        ("Gaislachkogl Mittelstation", "Gaislachkogl Gipfel"),
-        ("Giggijoch Tal", "Giggijoch Berg")
+   edges = [
+        # Gaislachkogl Lifte
+        ("Gaislachkogl Tal", "Gaislachkogl Mittel"),
+        ("Gaislachkogl Mittel", "Gaislachkogl Gipfel"),
+        
+        # Giggijoch Lifte
+        ("Giggijoch Tal", "Giggijoch Berg"),
+        ("Giggijoch Berg", "Rotkogljoch"),
+        
+        # Verbindung Giggijoch -> Gaislach (und zurück)
+        ("Giggijoch Berg", "Langegg"),
+        ("Langegg", "Gaislachkogl Mittel"),
+        
+        # Golden Gate zum Gletscher
+        ("Langegg", "Einzeiger"),
+        ("Einzeiger", "Rettenbachferner"),
+        
+        # Gletscher-Verbindung
+        ("Rettenbachferner", "Schwarze Schneid"),
+        ("Schwarze Schneid", "Tiefenbachferner")
     ]
     for u, v in edges:
         G.add_edge(u, v)
