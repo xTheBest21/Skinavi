@@ -76,6 +76,17 @@ def build_soelden_graph():
         "🏠 s´Stabele Schirmbar": (385, 806),
         "🏠 Sonnblick": (340, 840),
         "🏠 Wirtshaus Giggijoch": (515, 895),
+        "🏠 Gaislachkogl-Alm": (290, 410),
+        "🏠 Silbertaler Alm": (340, 450),
+        "🏠 Eugen's Obstlerhütte": (370, 810),
+        "🏠 Rotkogljochhütte": (625, 775),
+        "🏠 Schwarzkoglhuette": (530, 650),
+        "🏠 Bratkartoffel-Hütte": (410, 880),
+        "🏠 Panorama Restaurant Tiefenbach": (745, 260),
+        "🏠 Rettenbachalm": (580, 520),
+        "🏠 Gampe Labe": (375, 900),
+        "🏠 Haimbachalm": (460, 900),
+        "🏠 Mittelstation-Wirt": (395, 320),
 
         # --- KATEGORIE 3: LIFTE & BAHNEN ---
         "🚠 Gaislachkogl I (Tal)": (130, 360),
