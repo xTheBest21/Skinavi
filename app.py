@@ -64,41 +64,46 @@ ziel_name = st.sidebar.selectbox("Dein Ziel:", sorted(alle_ziele.keys()))
 my_pos = alle_ziele[start_name]
 ziel_pos = alle_ziele[ziel_name]
 
-# --- 5. Handy-optimierte Karte ---
-# Wir nutzen 'use_container_width=True' und setzen eine feste Höhe, die auf Handys gut aussieht
-map_height = 600 # Eine gute Höhe für die meisten Smartphones
+# --- 5. Handy-optimierte Karte mit Zoom-Begrenzung ---
 
-# Karten-Objekt mit Start-Zoom für das Panorama
+# Wir definieren die Grenzen basierend auf deinem Pistenplan [cite: 1]
+bild_grenzen = [[46.920, 10.930], [47.010, 11.060]]
+
+# Initialisierung der Karte mit festen Grenzen
 m = folium.Map(
     location=[46.9655, 11.0088], 
-    zoom_start=13, 
+    zoom_start=14, 
     tiles=None,
-    zoom_control=True, # Wichtig für die Bedienung mit dem Daumen
-    scrollWheelZoom=True
+    min_zoom=13,        # Verhindert zu weites Rauszoomen
+    max_zoom=16,        # Verhindert zu tiefes Reinzoomen (Verpixelung)
+    max_bounds=True,    # Aktiviert die Begrenzung
+    min_lat=bild_grenzen[0][0],
+    max_lat=bild_grenzen[1][0],
+    min_lon=bild_grenzen[0][1],
+    max_lon=bild_grenzen[1][1]
 )
 
 # Das Bild (Pistenplan) hinzufügen
-image_url = "https://raw.githubusercontent.com/xTheBest21/skinavi/main/soelden_pistenplan.jpg"
-bild_grenzen = [[46.920, 10.930], [47.010, 11.060]]
+image_url = f"https://raw.githubusercontent.com/xTheBest21/skinavi/main/soelden_pistenplan.jpg"
 
 folium.raster_layers.ImageOverlay(
     image=image_url,
     bounds=bild_grenzen,
     opacity=1.0,
-    interactive=True, # Erlaubt das Klicken auf Markierungen auf dem Bild
+    interactive=True,
     cross_origin=True,
     zindex=1
 ).add_to(m)
 
-# Marker für Start und Ziel
+# Marker für Start und Ziel [cite: 145]
 folium.Marker(my_pos, popup=f"START: {start_name}", icon=folium.Icon(color='blue', icon='play')).add_to(m)
 folium.Marker(ziel_pos, popup=f"ZIEL: {ziel_name}", icon=folium.Icon(color='red', icon='flag')).add_to(m)
 
-# Gelbe Linie (Richtungshilfe)
+# Gelbe Linie als Richtungshilfe [cite: 131]
 folium.PolyLine([my_pos, ziel_pos], color="yellow", weight=5, opacity=0.8).add_to(m)
 
-# Die Karte in Streamlit anzeigen (optimiert für mobile Container)
-st_folium(m, width=None, height=map_height, use_container_width=True)
+# Anzeige in Streamlit
+st_folium(m, width=None, height=600, use_container_width=True)
 
 # Info-Box
 distanz = berechne_distanz(my_pos, ziel_pos)
