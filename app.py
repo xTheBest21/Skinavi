@@ -13,7 +13,6 @@ pisten_ziele = {
     "🏠 Gampe Thaya": [46.962, 11.015],
     "🏠 Falcon Restaurant": [46.942, 10.992]
 }
-}
 start = st.sidebar.selectbox("Start:", list(ziele.keys()), key="s1")
 ziel = st.sidebar.selectbox("Ziel:", list(ziele.keys()), key="z1")
 
